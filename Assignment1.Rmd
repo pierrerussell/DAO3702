@@ -1,7 +1,6 @@
 ---
 title: "DBA3702 Assignment 1"
-subtitle: "Data Wrangling & Social Network Analysis - TechConnect Inc."
-author: "Group X - [Names and Student IDs]"
+author: "
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -45,8 +44,7 @@ print(employees, n = 10)
 cat("Rows:", nrow(employees), "\n")
 cat("Columns:", ncol(employees), "\n")
 
-sapply(employees, class)
-glimpse(employees)
+sapply(employees, typeof)
 summary(employees)
 ```
 
