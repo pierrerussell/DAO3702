@@ -171,15 +171,19 @@ email_graph <- graph.data.frame(email_edges, vertices = email_nodes, directed = 
 cat("Nodes:", vcount(email_graph), "\n")
 cat("Edges:", ecount(email_graph), "\n")
 
-# v) Basic plot and improvements
+# v) Basic plot 
 set.seed(45)
 mylayout <- layout.auto(email_graph)
 plot(email_graph, layout = mylayout)
 
-vertex.label=NA
-vertex.size=sqrt(degree(email_graph)) * 3
+# Improved plot
 par(mar = c(0, 0, 0, 0))
-plot(email_graph, layout = mylayout)
+plot(
+  email_graph,
+  layout = mylayout,
+  vertex.label = NA,
+  vertex.size = 2 * sqrt(degree(email_graph))
+)
 
 # w) Color by department
 depts <- V(email_graph)$department
