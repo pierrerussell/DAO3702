@@ -28,7 +28,6 @@ cat("Rows:", nrow(employees), "\n")
 cat("Columns:", ncol(employees), "\n")
 
 sapply(employees, class)
-glimpse(employees)
 summary(employees)
 
 # --- Q1.2: Selecting and Filtering (8 pts) ---
@@ -41,7 +40,6 @@ employees %>%
 high_performers <- employees %>%
   filter(performance_score > 4.0)
 high_performers
-nrow(high_performers)
 
 # f) Engineering or Marketing AND >5 years exp
 employees %>%
@@ -138,11 +136,11 @@ employees %>%
   group_by(department) %>%
   mutate(
     dept_avg = mean(salary),
-    pct_of_avg = salary / dept_avg * 100
+    pct_of_avg_salary = salary / dept_avg * 100
   ) %>%
   ungroup() %>%
-  arrange(desc(pct_of_avg)) %>%
-  select(name, department, salary, dept_avg, pct_of_avg)
+  arrange(desc(pct_of_avg_salary)) %>%
+  select(name, department, salary, dept_avg, pct_of_avg_salary)
 
 # s) Pipeline: 3+ yrs exp, group by dept, avg perf, top 3
 employees %>%

@@ -1,6 +1,6 @@
 ---
 title: "DBA3702 Assignment 1"
-author: ""
+author: "weRready"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -18,9 +18,9 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE,
 
 \newpage
 
-# Part 1: Data Wrangling with dplyr (45 points)
+# Part 1: Data Wrangling with dplyr
 
-## Question 1.1: Data Exploration (5 points)
+## Question 1.1: Data Exploration
 
 ### a) Load packages and read data
 
@@ -48,11 +48,11 @@ sapply(employees, typeof)
 summary(employees)
 ```
 
-We have 50 employees with 8 variables. The data includes basic info like name and department, plus numeric stuff like salary, years of experience, performance scores, and project counts. Performance ranges from around 2.9 to 4.9, and experience goes from 1 to 16 years.
+The dataset includes information about 50 employees with 8 variables. This includes basic information, such as employee name and department, as well as quantitative information, such as salary, years of experience, performance scores, and number of projects completed.
 
 \newpage
 
-## Question 1.2: Selecting and Filtering (8 points)
+## Question 1.2: Selecting and Filtering
 
 ### d) Select specific columns
 
@@ -61,36 +61,35 @@ employees %>%
   select(name, department, role, performance_score)
 ```
 
-### e) Filter performance > 4.0
+### e) Select employees with performance \> 4.0
 
 ```{r q1.2e}
 high_performers <- employees %>%
   filter(performance_score > 4.0)
 high_performers
-cat("Count:", nrow(high_performers))
 ```
 
-### f) Engineering/Marketing with > 5 years experience
+### f) Select employees in Engineering/Marketing with \> 5 years experience
 
 ```{r q1.2f}
 employees %>%
   filter((department == "Engineering" | department == "Marketing") & years_exp > 5)
 ```
 
-### g) Select using helpers
+### g) Select columns using helpers
 
 ```{r q1.2g}
 employees %>%
   select(contains("score") | starts_with("p"))
 ```
 
-This grabs performance_score and projects_completed - the columns with "score" in the name or starting with "p".
+There are two columns, *performance_score* and *projects_completed*, that meet the given condition.
 
 \newpage
 
-## Question 1.3: Sorting and Ranking (7 points)
+## Question 1.3: Sorting and Ranking
 
-### h) Top 5 highest-paid
+### h) Identify top 5 highest-paid employees
 
 ```{r q1.3h}
 employees %>%
@@ -98,14 +97,14 @@ employees %>%
   head(5)
 ```
 
-### i) Sort by department then performance
+### i) Sort by department, then performance
 
 ```{r q1.3i}
 employees %>%
   arrange(department, desc(performance_score))
 ```
 
-### j) Lowest salary in each department
+### j) Identify employee with lowest salary in each department
 
 ```{r q1.3j}
 employees %>%
@@ -117,7 +116,7 @@ employees %>%
 
 \newpage
 
-## Question 1.4: Creating New Variables (10 points)
+## Question 1.4: Creating New Variables
 
 ### k) Salary per year of experience
 
@@ -140,8 +139,6 @@ employees_cat <- employees %>%
 
 employees_cat %>%
   select(name, performance_score, performance_category)
-
-employees_cat %>% count(performance_category)
 ```
 
 ### m) Experience level
@@ -157,8 +154,6 @@ employees_exp <- employees %>%
 
 employees_exp %>%
   select(name, years_exp, experience_level)
-
-employees_exp %>% count(experience_level)
 ```
 
 ### n) High performer flag
@@ -172,7 +167,7 @@ employees %>%
 
 \newpage
 
-## Question 1.5: Aggregation and Grouping (15 points)
+## Question 1.5: Aggregation and Grouping
 
 ### o) Company-wide summary
 
@@ -214,9 +209,9 @@ dept_role
 dept_role %>% head(1)
 ```
 
-The highest average salary is in the department-role combo shown above.
+Managers in the Engineering department have the highest salary on average.
 
-### r) Salary as % of department average
+### r) Individual employees' salary as % of department average
 
 ```{r q1.5r}
 employees %>%
@@ -230,9 +225,9 @@ employees %>%
   select(name, department, salary, dept_avg, pct_of_avg)
 ```
 
-The person at the top earns the most relative to their department's average.
+Bella Moore from Finance department earns the most relative to their department's average, with a relative percentage of 156.37%.
 
-### s) Top 3 departments by performance (3+ years exp)
+### s) Top 3 departments by performance (only considering employees with 3+ years of experience)
 
 ```{r q1.5s}
 employees %>%
@@ -243,11 +238,13 @@ employees %>%
   head(3)
 ```
 
+Only taking into account the work of employees with 3 or more years of experience, the Engineering, Finance, and Sales departments show the best average performance.
+
 \newpage
 
-# Part 2: Social Network Analysis (45 points)
+# Part 2: Social Network Analysis
 
-## Question 2.1: Network Construction and Visualization (10 points)
+## Question 2.1: Network Construction and Visualization
 
 ### t) Load network data
 
@@ -271,7 +268,7 @@ cat("Nodes:", vcount(email_graph), "\n")
 cat("Edges:", ecount(email_graph), "\n")
 ```
 
-### v) Basic and improved plots
+### v) Create plot of network
 
 ```{r part_v}
 # v) Improved plot
@@ -293,13 +290,13 @@ names(colors) <- unique_depts
 par(mfrow = c(1, 1), mar = c(1, 1, 2, 5))
 plot(email_graph, vertex.label = NA, vertex.size = sqrt(deg) * 3,
      vertex.color = colors[depts], edge.width = 0.5,
-     main = "By Department")
+     main = "Network (colored by Department)")
 legend("topright", unique_depts, fill = colors, cex = 0.7, bty = "n")
 ```
 
 \newpage
 
-## Question 2.2: Connected Components (8 points)
+## Question 2.2: Connected Components
 
 ### x) Find connected components
 
@@ -313,7 +310,7 @@ cat("Number of components:", comp$no, "\n")
 ```{r q2.2y}
 lcc_size <- max(comp$csize)
 cat("Largest component:", lcc_size, "employees\n")
-cat("That's", round(lcc_size / vcount(email_graph) * 100, 1), "% of everyone\n")
+cat(round(lcc_size / vcount(email_graph) * 100, 1), "% of employees are in this component\n")
 ```
 
 ### z) Extract and plot largest component
@@ -337,11 +334,11 @@ legend("topright", unique_depts, fill = colors, cex = 0.7, bty = "n")
 
 ### aa) Why use the largest connected component?
 
-For closeness centrality, you need every node to be reachable from every other node. If the graph is disconnected, some distances become infinite and the calculation breaks. Using just the largest component avoids this problem and gives us meaningful values to work with.
+To calculate closeness centrality of nodes, every node must be reachable from every other node. If selected nodes are in different components (i.e., graph is disconnected), some distances become infinite and the calculation breaks. Focusing on the largest component helps avoid this problem and gives meaningful values that can be interpreted and compared.
 
 \newpage
 
-## Question 2.3: Centrality Metrics (15 points)
+## Question 2.3: Centrality Metrics
 
 ### bb) Degree Centrality
 
@@ -356,7 +353,7 @@ head(deg_df, 5)
 par(mar = c(1, 1, 2, 5))
 plot(lcc, vertex.label = V(lcc)$name, vertex.label.cex = 0.5,
      vertex.size = deg_cent * 1.5, vertex.color = colors[depts_lcc],
-     edge.width = 0.5, main = "Sized by Degree")
+     edge.width = 0.5, main = "Network (sized by Degree)")
 legend("topright", unique_depts, fill = colors, cex = 0.6, bty = "n")
 ```
 
@@ -371,7 +368,7 @@ cat("Top 5 by closeness:\n")
 head(close_df, 5)
 ```
 
-High closeness means you can reach everyone else pretty quickly - you're not stuck in a corner of the network. These people are good for spreading info fast since they're "close" to everyone.
+High closeness means the employee can reach other employees quickly (i.e., in shorter distances) - they are central in the network. These employees are effective in spreading information fast since they are "close" to others.
 
 ### dd) Betweenness Centrality
 
@@ -384,7 +381,7 @@ cat("Top 5 by betweenness:\n")
 head(btw_df, 5)
 ```
 
-Betweenness measures how often someone sits on the shortest path between other people. High betweenness = you're a bridge or connector. These folks control info flow - if they don't pass something along, it might not get where it needs to go.
+Betweenness measures how often an employee sits on the shortest path between other employees. An employee with high betweenness centrality is a bridge or connector. These employees control flow of information - if they do not pass something along properly or get removed, the network will be disrupted and information might not get to where it needs to go.
 
 ### ee) PageRank
 
@@ -397,7 +394,7 @@ cat("Top 5 by PageRank:\n")
 head(pr_df, 5)
 ```
 
-PageRank is different from degree because it cares about *who* you're connected to. Being friends with popular people boosts your score more than being friends with people no one else talks to. It's about influence, not just connection count.
+PageRank is different from simple degree centrality because it takes into account *who* an employee is connected to. Being connected to important employees (i.e., those who are well-connected themselves) boosts an employee's PageRank score more than being connected to isolated employees. It measures an employee's direct and indirect influence instead of simply counting the number of connections.
 
 ### ff) Comparing all metrics
 
@@ -426,11 +423,15 @@ top10 %>%
   select(id, deg_r, close_r, btw_r, pr_r)
 ```
 
-Some people rank high on everything - they're the real network stars. Others might have high betweenness but only moderate degree, meaning they're important bridges even without tons of connections. You can also see that managers/leads tend to show up more, which makes sense given their coordinating role.
+Employees like Eve Thompson (employee ID: 2) and Bella Moore (employee ID: 28) rank relatively high across board - they are highly influential in the network, connected to many other employees and able to spread information quickly.
+
+Other employees, such as Yuki Tanaka (employee ID: 25) and Nathan Lee (employee ID: 14), have high betweenness but only moderate degree, which suggests that they may not know many other employees but are still central to facilitating communication. There are also employees, such as Wendy Clark (employee ID: 23), who have a high PageRank score but moderate closeness centrality, which implies that while they may not be able to spread information fast, they have influence in the network.
+
+In addition, managers and leads tend to show up more in the dataframe for top 10 employees, which intuitively makes sense given their coordinating role in organizations.
 
 \newpage
 
-## Question 2.4: Community Detection (12 points)
+## Question 2.4: Community Detection
 
 ### gg) Spinglass clustering
 
@@ -458,7 +459,7 @@ comm_colors <- brewer.pal(max(3, num_comm), "Set2")
 par(mar = c(1, 1, 2, 5))
 plot(lcc, vertex.label = V(lcc)$name, vertex.label.cex = 0.5,
      vertex.size = 10, vertex.color = comm_colors[mem],
-     edge.width = 0.5, main = "By Community")
+     edge.width = 0.5, main = "Network (colored by Community)")
 legend("topright", paste("Comm", 1:num_comm), fill = comm_colors[1:num_comm],
        cex = 0.6, bty = "n")
 ```
@@ -473,28 +474,29 @@ comm_dept <- data.frame(
 )
 
 xtab <- table(comm_dept$community, comm_dept$department)
+cat("\nNumber of employees:\n")
 xtab
 
 cat("\nPercentages:\n")
 round(prop.table(xtab, 1) * 100, 1)
 ```
 
-The communities are completely made up of single departments.
+The communities match up perfectly with departments, which makes sense given employees are more likely to work with other employees in the same department. However, this also presents a warning in that there may not be much cross-team communication happening, and certain teams could get stuck in their own silos.
 
 ### kk) Business insights
 
-A few things management could take from this:
+Insights the management could take from understanding these communication communities include:
 
-- The communities show how people actually communicate, not just how the org chart says they should
-- People who bridge multiple communities are valuable - they help different groups stay connected
-- If a community is 100% one department, that might be a warning sign of a silo
-- When planning changes or announcements, it's smart to work with community leaders to spread the word effectively
+-   The communities go beyond the organizational chart to show how employees actually communicate
+-   Employees who bridge multiple communities are valuable, as they help different groups stay connected
+-   If a community consists of only one department, it could be a warning sign that the community is working in silo instead of actively connecting with others
+-   When planning projects, changes or announcements, it is good practice to work with community leaders to spread the word quickly and effectively
 
 \newpage
 
-# Part 3: Integration and Insights (10 points)
+# Part 3: Integration and Insights
 
-## Question 3.1: Joining Data (5 points)
+## Question 3.1: Joining Data
 
 ### ll) Join employee data with centrality metrics
 
@@ -525,7 +527,7 @@ cat("Betweenness vs Performance:", round(cor(combined$betweenness, combined$perf
 cat("PageRank vs Performance:", round(cor(combined$pagerank, combined$performance_score), 3), "\n")
 ```
 
-There's some relationship between network position and performance, but it's not super strong. Being well-connected might help with performance, or maybe high performers naturally end up more connected. Either way, it's not the whole story - plenty of other factors matter too.
+There is a positive relationship between network position and performance, but none of them are very strong. It could be the case that being well-connected helps with performance, or high performers naturally end up being more connected.
 
 ### nn) High performers with low centrality
 
@@ -539,11 +541,11 @@ combined %>%
   arrange(desc(performance_score))
 ```
 
-These are people doing great work but flying under the radar network-wise. They might be specialists who don't need to talk to everyone, or just more introverted. Management should make sure these folks aren't getting overlooked for promotions just because they're not as visible in the network.
+While employees like Tara Jenkins (employee ID: 46) do great work, they are flying under the radar network-wise. They may be specialists who do not need to talk to other employees as much, or more introverted. Management should make sure these employees are not getting overlooked for promotions simply because they are not as visible in the network.
 
 \newpage
 
-## Question 3.2: Executive Summary (5 points)
+## Question 3.2: Executive Summary
 
 ```{r exec-setup, echo=FALSE}
 avg_perf <- round(mean(employees$performance_score), 2)
@@ -559,28 +561,28 @@ hub_names <- paste(hubs$name, collapse = ", ")
 
 **Overview**
 
-We analyzed TechConnect's employee data and email communication patterns to understand performance trends and how information flows through the organization.
+We have analyzed TechConnect's employee data and email communication patterns to understand performance trends and how information flows through the organization.
 
 **Performance Findings**
 
-The company's average performance score is `r avg_perf` out of 5, which is pretty solid. Across all departments, employees have completed `r total_projects` projects total. We found `r high_perf_n` people who are standout performers - scoring above 4.0 and completing 10+ projects each. There's some variation between departments, but overall the workforce is performing well.
+The company's average performance score is `r avg_perf` out of 5, which indicates strong performance across the board. Employees have completed `r total_projects` projects in total across all departments. Moreover, we identified `r high_perf_n` employees who are standout performers - scoring above 4.0 and completing 10+ projects each. While there is some variation between departments, overall the workforce is performing well.
 
 **Network Structure**
 
-Looking at email patterns, `r lcc_n` out of 50 employees are in the main communication cluster. The network shows that people don't just talk within their own departments - there's a fair amount of cross-team communication. The communities we detected overlap with departments but aren't a perfect match, which suggests people are collaborating across org boundaries.
+Looking at email patterns, `r lcc_n` out of 50 employees are in the main communication cluster. The network shows that employees are willing to network beyond their departments - there is a fair amount of cross-team communication. Furthermore, the communities we detected are separated by departments. While this makes sense intuitively, management may want to make additional efforts to encourage cross-department communication.
 
-**Key People**
+**Key Employees**
 
-A few employees stand out as communication hubs: `r hub_names`. These folks have high betweenness centrality, meaning they connect different parts of the organization. If one of them left, it could seriously disrupt how information gets around.
+A few employees stand out as communication hubs: `r hub_names`. They have high betweenness centrality, meaning they connect different parts of the organization. If one of them left the company, it could seriously disrupt how information gets around the network.
 
-**Recommendations**
+**Recommendations for TechConnect**
 
-1. **Use your connectors** - The people with high betweenness are natural choices for spreading important updates or leading cross-functional projects.
+1.  **Use your connectors** - The employees with high betweenness centrality are effective choices for spreading important updates or leading cross-functional projects.
 
-2. **Watch for silos** - If any department starts communicating only internally, that's worth addressing before it becomes a problem.
+2.  **Watch for silos** - If any department starts communicating only internally, management may want to address it before it snowballs into significant information discrepancies across departments and serious communication issues.
 
-3. **Don't forget the quiet high performers** - Some of your best people aren't super networked. Make sure they're still getting recognized and considered for advancement.
+3.  **Do not forget the quiet high performers** - Some of your best people are not super networked, as shown by the case of Tara Jenkins. Make sure they are still getting recognized and considered for advancement, so that they feel appreciated by the company and continue to contribute to the business.
 
-4. **Plan for departures** - If a key bridge person leaves, have a backup plan. Maybe cross-train people or build redundant communication paths.
+4.  **Plan for departures** - It is good practice to have a backup plan in case a key bridge employee leaves the organization. Examples include cross-training employees or building additional communication paths.
 
-5. **Think about teams** - When putting together project teams, consider who already talks to whom. Natural communication patterns can make collaboration smoother.
+5.  **Think about teams** - When putting together project teams, consider who already talks to whom. Natural communication patterns can make collaboration smoother.
