@@ -273,13 +273,21 @@ cat("Edges:", ecount(email_graph), "\n")
 
 ### v) Basic and improved plots
 
-```{r q2.1v, fig.height=5}
-par(mfrow = c(1, 2), mar = c(1, 1, 2, 1))
-plot(email_graph, main = "Basic")
+```{r part_v}
+# v) Basic plot
 
-deg <- degree(email_graph)
-plot(email_graph, vertex.label = NA, vertex.size = sqrt(deg) * 3,
-     edge.width = 0.5, main = "Improved")
+set.seed(45)
+mylayout <- layout.auto(email_graph)
+plot(email_graph, layout = mylayout)
+
+# Improved plot
+par(mar = c(0, 0, 0, 0))
+plot(
+  email_graph,
+  layout = mylayout,
+  vertex.label = NA,
+  vertex.size = 2 * sqrt(degree(email_graph))
+)
 ```
 
 The improved version removes the messy labels and sizes nodes by how connected they are.
