@@ -171,16 +171,17 @@ email_graph <- graph.data.frame(email_edges, vertices = email_nodes, directed = 
 cat("Nodes:", vcount(email_graph), "\n")
 cat("Edges:", ecount(email_graph), "\n")
 
-# v) Basic plot vs improved plot
-par(mfrow = c(1, 2), mar = c(1, 1, 2, 1))
-plot(email_graph, main = "Basic")
+# v) Basic plot and improvements
+set.seed(45)
+mylayout <- layout.auto(email_graph)
+plot(email_graph, layout = mylayout)
 
-deg <- degree(email_graph)
-plot(email_graph, vertex.label = NA, vertex.size = sqrt(deg) * 3,
-     edge.width = 0.5, main = "Improved")
+vertex.label=NA
+vertex.size=sqrt(degree(email_graph)) * 3
+par(mar = c(0, 0, 0, 0))
+plot(email_graph, layout = mylayout)
 
 # w) Color by department
-par(mfrow = c(1, 1), mar = c(1, 1, 2, 5))
 depts <- V(email_graph)$department
 unique_depts <- unique(depts)
 colors <- brewer.pal(length(unique_depts), "Set1")
