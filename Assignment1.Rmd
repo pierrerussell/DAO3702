@@ -1,6 +1,6 @@
 ---
 title: "DBA3702 Assignment 1"
-author: "
+author: ""
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -274,23 +274,13 @@ cat("Edges:", ecount(email_graph), "\n")
 ### v) Basic and improved plots
 
 ```{r part_v}
-# v) Basic plot
+# v) Improved plot
 
-set.seed(45)
-mylayout <- layout.auto(email_graph)
-plot(email_graph, layout = mylayout)
-
-# Improved plot
-par(mar = c(0, 0, 0, 0))
-plot(
-  email_graph,
-  layout = mylayout,
-  vertex.label = NA,
-  vertex.size = 2 * sqrt(degree(email_graph))
-)
+deg <- degree(email_graph)
+plot(email_graph, vertex.label = NA, vertex.size = sqrt(deg) * 3,
+     edge.width = 0.5, main = "Improved Plot")
 ```
 
-The improved version removes the messy labels and sizes nodes by how connected they are.
 
 ### w) Department-colored network
 
@@ -489,7 +479,7 @@ cat("\nPercentages:\n")
 round(prop.table(xtab, 1) * 100, 1)
 ```
 
-The communities don't match up perfectly with departments. Some communities have people from multiple departments, which shows there's cross-team communication happening. That's generally a good thing - it means people aren't just stuck in their own silos.
+The communities are completely made up of single departments.
 
 ### kk) Business insights
 

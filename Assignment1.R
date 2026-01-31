@@ -17,7 +17,7 @@ library(RColorBrewer)
 # --- Q1.1: Data Exploration (5 pts) ---
 
 # a) Read in employees data
-employees <- read.csv("data/employees.csv")
+employees <- read.csv("Assignment 1/data/employees.csv")
 
 # b) Convert to tibble, show first 10 rows
 employees <- as_tibble(employees)
@@ -159,8 +159,8 @@ employees %>%
 # --- Q2.1: Network Construction (10 pts) ---
 
 # t) Load network data
-email_nodes <- read.csv("data/email_nodes.csv")
-email_edges <- read.csv("data/email_edges.csv")
+email_nodes <- read.csv("Assignment 1/data/email_nodes.csv")
+email_edges <- read.csv("Assignment 1/data/email_edges.csv")
 
 head(email_nodes)
 head(email_edges)
@@ -171,19 +171,10 @@ email_graph <- graph.data.frame(email_edges, vertices = email_nodes, directed = 
 cat("Nodes:", vcount(email_graph), "\n")
 cat("Edges:", ecount(email_graph), "\n")
 
-# v) Basic plot 
-set.seed(45)
-mylayout <- layout.auto(email_graph)
-plot(email_graph, layout = mylayout)
-
-# Improved plot
-par(mar = c(0, 0, 0, 0))
-plot(
-  email_graph,
-  layout = mylayout,
-  vertex.label = NA,
-  vertex.size = 2 * sqrt(degree(email_graph))
-)
+# v) 
+deg <- degree(email_graph)
+plot(email_graph, vertex.label = NA, vertex.size = sqrt(deg) * 3,
+     edge.width = 0.5, main = "Improved Plot")
 
 # w) Color by department
 depts <- V(email_graph)$department
@@ -320,8 +311,8 @@ xtab <- table(comm_dept$community, comm_dept$department)
 xtab
 prop.table(xtab, 1) * 100
 
-# Communities don't perfectly match departments - there's cross-dept communication
-# happening, which is actually good. Some people bridge different groups.
+# Communities are completely made up of single department.
+
 
 # kk) Business insights:
 # - Communities show how info actually flows (not just org chart)
