@@ -275,7 +275,7 @@ cat("Edges:", ecount(email_graph), "\n")
 
 deg <- degree(email_graph)
 plot(email_graph, vertex.label = NA, vertex.size = sqrt(deg) * 3,
-     edge.width = 0.5, main = "Improved")
+     edge.width = 0.5, main = "Improved Plot")
 ```
 
 
@@ -481,7 +481,7 @@ cat("\nPercentages:\n")
 round(prop.table(xtab, 1) * 100, 1)
 ```
 
-The communities don't match up perfectly with departments. Some communities have people from multiple departments, which shows there's cross-team communication happening. That's generally a good thing - it means people aren't just stuck in their own silos.
+The communities match up perfectly with departments, which makes sense given employees are more likely to work with other employees in the same department. However, this also presents a warning in that there may not be much cross-team communication happening, and certain teams could get stuck in their own silos.
 
 ### kk) Business insights
 
