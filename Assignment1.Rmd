@@ -451,7 +451,7 @@ In addition, managers and leads tend to show up more in the dataframe for top 10
 set.seed(42)
 comm <- cluster_spinglass(lcc)
 
-cat("Communities found:", length(comm), "\n")
+cat("Communities found:", length(comm$csize), "\n")
 cat("Modularity:", round(modularity(comm), 3), "\n")
 ```
 

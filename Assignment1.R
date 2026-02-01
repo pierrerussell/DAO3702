@@ -291,7 +291,7 @@ top10 %>% select(id, name, deg_rank, close_rank, btw_rank, pr_rank)
 # gg) Spinglass clustering
 set.seed(42)
 comm <- cluster_spinglass(lcc)
-cat("Communities found:", length(comm), "\n")
+cat("Communities found:", length(comm$csize), "\n")
 
 # hh) Size of each community
 mem <- membership(comm)
