@@ -354,9 +354,12 @@ head(deg_df, 5)
 
 par(mar = c(1, 1, 2, 5))
 plot(lcc, vertex.label = V(lcc)$name, vertex.label.cex = 0.5,
-     vertex.size = deg_cent * 1.5, vertex.color = colors[depts_lcc],
+     vertex.size = 2 * sqrt(deg_cent), vertex.color = colors[depts_lcc],
      edge.width = 0.5, main = "Network (sized by Degree)")
 legend("topright", unique_depts, fill = colors, cex = 0.6, bty = "n")
+```
+```{r}
+
 ```
 
 ### cc) Closeness Centrality

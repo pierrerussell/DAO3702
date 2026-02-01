@@ -17,7 +17,7 @@ library(RColorBrewer)
 # --- Q1.1: Data Exploration (5 pts) ---
 
 # a) Read in employees data
-employees <- read.csv("Assignment 1/data/employees.csv")
+employees <- read.csv("data/employees.csv")
 
 # b) Convert to tibble, show first 10 rows
 employees <- as_tibble(employees)
@@ -157,8 +157,8 @@ employees %>%
 # --- Q2.1: Network Construction (10 pts) ---
 
 # t) Load network data
-email_nodes <- read.csv("Assignment 1/data/email_nodes.csv")
-email_edges <- read.csv("Assignment 1/data/email_edges.csv")
+email_edges <- read.csv("data/email_edges.csv")
+email_nodes <- read.csv("data/email_nodes.csv")
 
 head(email_nodes)
 head(email_edges)
@@ -230,7 +230,7 @@ head(deg_df, 5)
 # Visualize
 par(mar = c(1, 1, 2, 5))
 plot(lcc, vertex.label = V(lcc)$name, vertex.label.cex = 0.5,
-     vertex.size = deg_cent * 1.5, vertex.color = colors[depts_lcc],
+     vertex.size = 2 * sqrt(deg_cent), vertex.color = colors[depts_lcc],
      edge.width = 0.5, main = "Sized by Degree")
 legend("topright", unique_depts, fill = colors, cex = 0.6, bty = "n")
 
