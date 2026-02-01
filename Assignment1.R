@@ -229,7 +229,7 @@ head(deg_df, 5)
 
 # Visualize
 par(mar = c(1, 1, 2, 5))
-plot(lcc, vertex.label = V(lcc)$name, vertex.label.cex = 0.5,
+plot(lcc, vertex.label = NA, vertex.label.cex = 0.5,
      vertex.size = 2 * sqrt(deg_cent), vertex.color = colors[depts_lcc],
      edge.width = 0.5, main = "Sized by Degree")
 legend("topright", unique_depts, fill = colors, cex = 0.6, bty = "n")
@@ -302,7 +302,7 @@ num_comm <- length(unique(mem))
 comm_colors <- brewer.pal(max(3, num_comm), "Set2")
 
 par(mar = c(1, 1, 2, 5))
-plot(lcc, vertex.label = V(lcc)$name, vertex.label.cex = 0.5,
+plot(lcc, vertex.label = NA, vertex.label.cex = 0.5,
      vertex.size = 10, vertex.color = comm_colors[mem],
      edge.width = 0.5, main = "By Community")
 legend("topright", paste("Comm", 1:num_comm), fill = comm_colors[1:num_comm],

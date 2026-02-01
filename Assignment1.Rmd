@@ -288,7 +288,7 @@ colors <- brewer.pal(length(unique_depts), "Set1")
 names(colors) <- unique_depts
 
 par(mfrow = c(1, 1), mar = c(1, 1, 2, 5))
-plot(email_graph, vertex.label = NA, vertex.size = sqrt(deg) * 3,
+plot(email_graph, vertex.label = NA, vertex.size = sqrt(deg) * 2,
      vertex.color = colors[depts], edge.width = 0.5,
      main = "Network (colored by Department)")
 legend("topright", unique_depts, fill = colors, cex = 0.7, bty = "n")
@@ -326,7 +326,7 @@ deg_lcc <- degree(lcc)
 depts_lcc <- V(lcc)$department
 
 par(mar = c(1, 1, 2, 5))
-plot(lcc, vertex.label = NA, vertex.size = sqrt(deg_lcc) * 3,
+plot(lcc, vertex.label = NA, vertex.size = sqrt(deg_lcc) * 2,
      vertex.color = colors[depts_lcc], edge.width = 0.5,
      main = "Largest Connected Component")
 legend("topright", unique_depts, fill = colors, cex = 0.7, bty = "n")
@@ -353,7 +353,7 @@ cat("Top 5 by degree:\n")
 head(deg_df, 5)
 
 par(mar = c(1, 1, 2, 5))
-plot(lcc, vertex.label = V(lcc)$name, vertex.label.cex = 0.5,
+plot(lcc, vertex.label = NA, vertex.label.cex = 0.5,
      vertex.size = 2 * sqrt(deg_cent), vertex.color = colors[depts_lcc],
      edge.width = 0.5, main = "Network (sized by Degree)")
 legend("topright", unique_depts, fill = colors, cex = 0.6, bty = "n")
@@ -469,8 +469,8 @@ num_comm <- length(unique(mem))
 comm_colors <- brewer.pal(max(3, num_comm), "Set2")
 
 par(mar = c(1, 1, 2, 5))
-plot(lcc, vertex.label = V(lcc)$name, vertex.label.cex = 0.5,
-     vertex.size = 10, vertex.color = comm_colors[mem],
+plot(lcc, vertex.label = NA, vertex.label.cex = 0.5,
+     vertex.size = 5, vertex.color = comm_colors[mem],
      edge.width = 0.5, main = "Network (colored by Community)")
 legend("topright", paste("Comm", 1:num_comm), fill = comm_colors[1:num_comm],
        cex = 0.6, bty = "n")

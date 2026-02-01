@@ -4,3 +4,10 @@
 # Editor-based HTTP Client requests
 /httpRequests/
 /Assignment 1.iml
+/copilot.data.migration.agent.xml
+/copilot.data.migration.ask.xml
+/copilot.data.migration.edit.xml
+/rGraphicsSettings.xml
+/rMarkdownGraphicsSettings.xml
+/rSettings.xml
+/*.xml
