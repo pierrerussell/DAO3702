@@ -272,10 +272,19 @@ cat("Edges:", ecount(email_graph), "\n")
 
 ```{r part_v}
 # v) Improved plot
+set.seed(45)
+mylayout <- layout.auto(email_graph)
 
+# Basic plot
+plot(email_graph, layout = mylayout)
+
+# Improved plot
+par(mar = c(0, 0, 0, 0))
 deg <- degree(email_graph)
-plot(email_graph, vertex.label = NA, vertex.size = sqrt(deg) * 3,
-     edge.width = 0.5, main = "Improved Plot")
+
+plot(email_graph, layout = mylayout, vertex.label = NA,
+  vertex.size = sqrt(deg) * 3, edge.width = 0.5,
+  main = "Improved Plot")
 ```
 
 

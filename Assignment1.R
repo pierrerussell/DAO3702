@@ -170,9 +170,15 @@ cat("Nodes:", vcount(email_graph), "\n")
 cat("Edges:", ecount(email_graph), "\n")
 
 # v) 
+set.seed(45)
+mylayout = layout.auto(email_graph)
+plot(email_graph, layout = mylayout)
+
+par(mar = c(0, 0, 0, 0))
 deg <- degree(email_graph)
-plot(email_graph, vertex.label = NA, vertex.size = sqrt(deg) * 3,
-     edge.width = 0.5, main = "Improved Plot")
+plot(email_graph, layout = mylayout, vertex.label = NA,
+  vertex.size = sqrt(deg) * 3, edge.width = 0.5,
+  main = "Improved Plot")
 
 # w) Color by department
 depts <- V(email_graph)$department
