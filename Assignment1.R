@@ -11,7 +11,7 @@ library(igraph)
 library(RColorBrewer)
 
 # ==============================================================================
-# PART 1: DATA WRANGLING (45 pts)
+# PART 1: DATA WRANGLING (45 pts) test
 # ==============================================================================
 
 # --- Q1.1: Data Exploration (5 pts) ---
