@@ -345,6 +345,8 @@ To calculate closeness centrality of nodes, every node must be reachable from ev
 ```{r q2.3bb}
 deg_cent <- degree(lcc)
 deg_df <- data.frame(id = as.integer(V(lcc)$name), degree = deg_cent) %>%
+  left_join(employees %>% select(employee_id, name), by = c("id" = "employee_id")) %>%
+  select(id, name, degree) %>%
   arrange(desc(degree))
 
 cat("Top 5 by degree:\n")
@@ -362,6 +364,8 @@ legend("topright", unique_depts, fill = colors, cex = 0.6, bty = "n")
 ```{r q2.3cc}
 close_cent <- closeness(lcc, normalized = TRUE)
 close_df <- data.frame(id = as.integer(V(lcc)$name), closeness = close_cent) %>%
+  left_join(employees %>% select(employee_id, name), by = c("id" = "employee_id")) %>%
+  select(id, name, closeness) %>%
   arrange(desc(closeness))
 
 cat("Top 5 by closeness:\n")
@@ -375,6 +379,8 @@ High closeness means the employee can reach other employees quickly (i.e., in sh
 ```{r q2.3dd}
 btw_cent <- betweenness(lcc, normalized = TRUE)
 btw_df <- data.frame(id = as.integer(V(lcc)$name), betweenness = btw_cent) %>%
+  left_join(employees %>% select(employee_id, name), by = c("id" = "employee_id")) %>%
+  select(id, name, betweenness) %>%
   arrange(desc(betweenness))
 
 cat("Top 5 by betweenness:\n")
@@ -388,6 +394,8 @@ Betweenness measures how often an employee sits on the shortest path between oth
 ```{r q2.3ee}
 pr <- page_rank(lcc)$vector
 pr_df <- data.frame(id = as.integer(V(lcc)$name), pagerank = pr) %>%
+  left_join(employees %>% select(employee_id, name), by = c("id" = "employee_id")) %>%
+  select(id, name, pagerank) %>%
   arrange(desc(pagerank))
 
 cat("Top 5 by PageRank:\n")
@@ -401,13 +409,14 @@ PageRank is different from simple degree centrality because it takes into accoun
 ```{r q2.3ff}
 all_cent <- data.frame(
   id = as.integer(V(lcc)$name),
-  dept = V(lcc)$department,
-  role = V(lcc)$role,
   degree = deg_cent,
   closeness = close_cent,
   betweenness = btw_cent,
   pagerank = pr
-)
+) %>%
+  left_join(employees %>% select(employee_id, name, department, role),
+            by = c("id" = "employee_id")) %>%
+  select(id, name, dept = department, role, degree, closeness, betweenness, pagerank)
 
 top10 <- all_cent %>% arrange(desc(degree)) %>% head(10)
 top10
@@ -420,7 +429,7 @@ top10 %>%
     btw_r = rank(-betweenness),
     pr_r = rank(-pagerank)
   ) %>%
-  select(id, deg_r, close_r, btw_r, pr_r)
+  select(id, name, deg_r, close_r, btw_r, pr_r)
 ```
 
 Employees like Eve Thompson (employee ID: 2) and Bella Moore (employee ID: 28) rank relatively high across board - they are highly influential in the network, connected to many other employees and able to spread information quickly.
@@ -471,7 +480,8 @@ comm_dept <- data.frame(
   id = as.integer(V(lcc)$name),
   community = mem,
   department = V(lcc)$department
-)
+) %>%
+  left_join(employees %>% select(employee_id, name), by = c("id" = "employee_id"))
 
 xtab <- table(comm_dept$community, comm_dept$department)
 cat("\nNumber of employees:\n")

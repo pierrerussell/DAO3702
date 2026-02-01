@@ -222,6 +222,8 @@ legend("topright", unique_depts, fill = colors, cex = 0.7, bty = "n")
 # bb) Degree centrality
 deg_cent <- degree(lcc)
 deg_df <- data.frame(id = as.integer(V(lcc)$name), degree = deg_cent) %>%
+  left_join(employees %>% select(employee_id, name), by = c("id" = "employee_id")) %>%
+  select(id, name, degree) %>%
   arrange(desc(degree))
 head(deg_df, 5)
 
@@ -235,6 +237,8 @@ legend("topright", unique_depts, fill = colors, cex = 0.6, bty = "n")
 # cc) Closeness
 close_cent <- closeness(lcc, normalized = TRUE)
 close_df <- data.frame(id = as.integer(V(lcc)$name), closeness = close_cent) %>%
+  left_join(employees %>% select(employee_id, name), by = c("id" = "employee_id")) %>%
+  select(id, name, closeness) %>%
   arrange(desc(closeness))
 head(close_df, 5)
 # High closeness = can reach everyone quickly, good for spreading info
@@ -242,6 +246,8 @@ head(close_df, 5)
 # dd) Betweenness
 btw_cent <- betweenness(lcc, normalized = TRUE)
 btw_df <- data.frame(id = as.integer(V(lcc)$name), betweenness = btw_cent) %>%
+  left_join(employees %>% select(employee_id, name), by = c("id" = "employee_id")) %>%
+  select(id, name, betweenness) %>%
   arrange(desc(betweenness))
 head(btw_df, 5)
 # High betweenness = sits on many shortest paths, controls info flow
@@ -249,6 +255,8 @@ head(btw_df, 5)
 # ee) PageRank
 pr <- page_rank(lcc)$vector
 pr_df <- data.frame(id = as.integer(V(lcc)$name), pagerank = pr) %>%
+  left_join(employees %>% select(employee_id, name), by = c("id" = "employee_id")) %>%
+  select(id, name, pagerank) %>%
   arrange(desc(pagerank))
 head(pr_df, 5)
 # PageRank considers who you're connected to, not just how many connections
@@ -256,13 +264,14 @@ head(pr_df, 5)
 # ff) Compare all metrics for top 10 by degree
 all_cent <- data.frame(
   id = as.integer(V(lcc)$name),
-  dept = V(lcc)$department,
-  role = V(lcc)$role,
   degree = deg_cent,
   closeness = close_cent,
   betweenness = btw_cent,
   pagerank = pr
-)
+) %>%
+  left_join(employees %>% select(employee_id, name, department, role),
+            by = c("id" = "employee_id")) %>%
+  select(id, name, dept = department, role, degree, closeness, betweenness, pagerank)
 
 top10 <- all_cent %>% arrange(desc(degree)) %>% head(10)
 top10
@@ -275,7 +284,7 @@ top10 <- top10 %>%
     btw_rank = rank(-betweenness),
     pr_rank = rank(-pagerank)
   )
-top10 %>% select(id, deg_rank, close_rank, btw_rank, pr_rank)
+top10 %>% select(id, name, deg_rank, close_rank, btw_rank, pr_rank)
 
 # --- Q2.4: Community Detection (12 pts) ---
 
@@ -304,7 +313,8 @@ comm_dept <- data.frame(
   id = as.integer(V(lcc)$name),
   community = mem,
   department = V(lcc)$department
-)
+) %>%
+  left_join(employees %>% select(employee_id, name), by = c("id" = "employee_id"))
 xtab <- table(comm_dept$community, comm_dept$department)
 xtab
 prop.table(xtab, 1) * 100
