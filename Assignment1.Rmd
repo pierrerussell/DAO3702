@@ -343,7 +343,7 @@ legend("topright", unique_depts, fill = colors, cex = 0.7, bty = "n")
 
 ### aa) Why use the largest connected component?
 
-To calculate closeness centrality of nodes, every node must be reachable from every other node. If selected nodes are in different components (i.e., graph is disconnected), some distances become infinite and the calculation breaks. Focusing on the largest component helps avoid this problem and gives meaningful values that can be interpreted and compared.
+To calculate closeness centrality of nodes, every node must be reachable from every other node. If selected nodes are in different components (i.e., graph is disconnected), some distances become infinite or undefined and the calculation breaks. Focusing on the largest component helps avoid this problem and gives meaningful values that can be interpreted and compared. When computing closeness on the largest connected component, within the largest connected component, every node can reach every other node, so the closeness values are properly defined and thus, we can compare them fairly.
 
 \newpage
 
@@ -384,7 +384,7 @@ cat("Top 5 by closeness:\n")
 head(close_df, 5)
 ```
 
-High closeness means the employee can reach other employees quickly (i.e., in shorter distances) - they are central in the network. These employees are effective in spreading information fast since they are "close" to others.
+High closeness centrality means the employee is “near” a lot of other people in the network, so they can reach others quickly and information can get to them quickly too. In practical terms, they are usually well-positioned for fast coordination and spreading updates across the organization, even if they’re not necessarily the main bridge between different groups.
 
 ### dd) Betweenness Centrality
 
@@ -399,7 +399,7 @@ cat("Top 5 by betweenness:\n")
 head(btw_df, 5)
 ```
 
-Betweenness measures how often an employee sits on the shortest path between other employees. An employee with high betweenness centrality is a bridge or connector. These employees control flow of information - if they do not pass something along properly or get removed, the network will be disrupted and information might not get to where it needs to go.
+Betweenness centrality measures how often an employee sits in the middle of the shortest routes connecting other employees. Thus, if someone has high betweenness, they usually act as a bridge between different clusters or teams, meaning they can connect communities that may otherwise be disconnected and shape how information moves across the organization, and if they step out or disengage, communication between groups can slow down or become more fragmented.
 
 ### ee) PageRank
 
@@ -414,7 +414,7 @@ cat("Top 5 by PageRank:\n")
 head(pr_df, 5)
 ```
 
-PageRank is different from simple degree centrality because it takes into account *who* an employee is connected to. Being connected to important employees (i.e., those who are well-connected themselves) boosts an employee's PageRank score more than being connected to isolated employees. It measures an employee's direct and indirect influence instead of simply counting the number of connections.
+Degree centrality is the direct count of how many people an employee is connected to. PageRank is different because it also cares who those connections are with, meaning being connected to important people boosts the score more than being connected to less influential ones. In practical terms, a high degree can mean talking to a lot of people, but PageRank can still rate someone highly even with fewer connections if those connections are to very influential people (higher quality links).
 
 ### ff) Comparing all metrics
 
@@ -444,11 +444,8 @@ top10 %>%
   select(id, name, deg_r, close_r, btw_r, pr_r)
 ```
 
-Employees like Eve Thompson (employee ID: 2) and Bella Moore (employee ID: 28) rank relatively high across board - they are highly influential in the network, connected to many other employees and able to spread information quickly.
-
-Other employees, such as Yuki Tanaka (employee ID: 25) and Nathan Lee (employee ID: 14), have high betweenness but only moderate degree, which suggests that they may not know many other employees but are still central to facilitating communication. There are also employees, such as Wendy Clark (employee ID: 23), who have a high PageRank score but moderate closeness centrality, which implies that while they may not be able to spread information fast, they have influence in the network.
-
-In addition, managers and leads tend to show up more in the dataframe for top 10 employees, which intuitively makes sense given their coordinating role in organizations.
+Yes, Eve Thompson (ID 5) ranks highly on all metrics. She’s tied-highest on degree (20), has the highest closeness (~0.0299) and highest PageRank (~0.0422) among the top 10 employees by degree, and very high betweenness (~0.288) as well. This pattern shows that Eve is someone who is both broadly connected (degree), centrally positioned in terms of short paths (closeness), frequently sits on key routes between others (betweenness), and is connected to other important nodes (PageRank).
+Other employees, such as Yuki Tanaka (ID 25) and Nathan Lee (ID 14), have high betweenness (~0.283 and ~0.338, respectively) but only moderate degree centrality (11 and 10, respectively), which suggests that they may not know many other employees but are still central to facilitating communication. There are also employees, such as Wendy Clark (ID 23), who have a high PageRank score (~0.040) but moderate closeness centrality (~0.026), which implies that while they may not be able to spread information fast, they have connections with influential people in the network. On the other hand, Grace Okonkwo (ID 7) ranks within the top 10 by degree (11) but has very low betweenness (~0.0057), which fits the idea of being connected within her immediate team, but is not a main connector between different teams.
 
 \newpage
 
@@ -502,17 +499,18 @@ xtab
 cat("\nPercentages:\n")
 round(prop.table(xtab, 1) * 100, 1)
 ```
-
-The communities match up perfectly with departments, which makes sense given employees are more likely to work with other employees in the same department. However, this also presents a warning in that there may not be much cross-team communication happening, and certain teams could get stuck in their own silos.
+Yes, the detected communities align strongly with departments as each community is dominated by one department. For every community, 100 percent of its members come from a single department, with no mixing across departments. This pattern suggests that communication within the organization is highly siloed. However, this community detection is based on who emails whom, thus it is possible that people still work cross-functionally physically but the email data is still primarily department-based.
 
 ### kk) Business insights
 
-Insights the management could take from understanding these communication communities include:
+Understanding TechConnect’s communication communities provides management with a practical lens for improving coordination and execution. Since communication largely occurs within well-defined groups, management should not assume that information or decisions naturally diffuse across the organization. Instead, communication across teams is likely to depend on deliberate intervention.
 
--   The communities go beyond the organizational chart to show how employees actually communicate
--   Employees who bridge multiple communities are valuable, as they help different groups stay connected
--   If a community consists of only one department, it could be a warning sign that the community is working in silo instead of actively connecting with others
--   When planning projects, changes or announcements, it is good practice to work with community leaders to spread the word quickly and effectively
+The community structure highlights the importance of individuals who connect different groups. These bridging employees play a disproportionate role in transmitting information across teams, coordinating work, and preventing misalignment. As a result, they represent both a strategic asset and a potential vulnerability if their roles are informal or unsupported.
+
+Community insights can also inform how TechConnect designs cross-functional initiatives. Because collaboration does not emerge organically at the group level, cross-department projects may require explicit communication structures, such as designated liaisons or joint reporting mechanisms, to function effectively.
+
+Finally, understanding community boundaries enables more targeted change management. When rolling out organizational changes, policies, or strategic initiatives, management can engage influential members within each community to improve adoption and reduce miscommunication, rather than relying solely on broad, organization-wide announcements.
+
 
 \newpage
 
@@ -549,7 +547,10 @@ cat("Betweenness vs Performance:", round(cor(combined$betweenness, combined$perf
 cat("PageRank vs Performance:", round(cor(combined$pagerank, combined$performance_score), 3), "\n")
 ```
 
-There is a positive relationship between network position and performance, but none of them are very strong. It could be the case that being well-connected helps with performance, or high performers naturally end up being more connected.
+Network centrality does have a moderate positive relationship with performance since all four centrality scores are correlated positively with performance, from 0.477 (Betweenness vs Performance) to 0.745 (PageRank vs Performance). PageRank has the strongest relationship with performance, so being connected to other important people seems most related to a better performance. Closeness (0.70) and degree (0.69) are also important to doing well, signaling that shorter distances and number of connections are important to performance. Betweenness (0.48) is weaker, which means bridging between groups is less important than the other centrality scores for performance.
+
+Correlation of degree centrality and performance score is 0.691.
+
 
 ### nn) High performers with low centrality
 
@@ -563,7 +564,7 @@ combined %>%
   arrange(desc(performance_score))
 ```
 
-While employees like Tara Jenkins (employee ID: 46) do great work, they are flying under the radar network-wise. They may be specialists who do not need to talk to other employees as much, or more introverted. Management should make sure these employees are not getting overlooked for promotions simply because they are not as visible in the network.
+While employees like Tara Jenkins (employee ID: 46) do great work, they are flying under the radar network-wise. They may be specialists who do not need to talk to other employees as much, or more introverted. Management should make sure these employees are not overlooked for promotions simply because they are not as visible in the network. Additionally, these employees could be underutilized and could benefit from more collaboration opportunities. They may also need mentorship to expand their network influence and visibility within the organization.
 
 \newpage
 
@@ -575,6 +576,40 @@ total_projects <- sum(employees$projects_completed)
 high_perf_n <- nrow(employees %>% filter(performance_score > 4.0 & projects_completed >= 10))
 lcc_n <- vcount(lcc)
 
+# Performance by experience level
+perf_by_experience <- combined %>%
+  group_by(years_exp) %>%
+  summarise(
+    n = n(),
+    avg_perf = mean(performance_score, na.rm = TRUE),
+    avg_projects = mean(projects_completed, na.rm = TRUE),
+    avg_degree = mean(degree, na.rm = TRUE),
+    avg_pagerank = mean(pagerank, na.rm = TRUE)
+  ) %>%
+  arrange(years_exp)
+
+perf_by_experience
+
+#Performance vs project load
+perf_by_project_load <- combined %>%
+  mutate(
+    project_band = case_when(
+      projects_completed >= quantile(projects_completed, 0.75, na.rm = TRUE) ~ "High load",
+      projects_completed <= quantile(projects_completed, 0.25, na.rm = TRUE) ~ "Low load",
+      TRUE ~ "Medium load"
+    )
+  ) %>%
+  group_by(project_band) %>%
+  summarise(
+    n = n(),
+    avg_perf = mean(performance_score, na.rm = TRUE),
+    avg_degree = mean(degree, na.rm = TRUE),
+    avg_betweenness = mean(betweenness, na.rm = TRUE)
+  ) %>%
+  arrange(desc(avg_perf))
+
+perf_by_project_load
+
 hubs <- combined %>% arrange(desc(betweenness)) %>% head(3)
 hub_names <- paste(hubs$name, collapse = ", ")
 ```
@@ -583,28 +618,26 @@ hub_names <- paste(hubs$name, collapse = ", ")
 
 **Overview**
 
-We have analyzed TechConnect's employee data and email communication patterns to understand performance trends and how information flows through the organization.
+We analyzed TechConnect’s employees and email communication data to assess performance and information flow. While overall performance is strong, communication and workload are concentrated within departments and among a small group of highly connected employees, creating coordination and resilience risks as the organization scales.
 
 **Performance Findings**
 
-The company's average performance score is `r avg_perf` out of 5, which indicates strong performance across the board. Employees have completed `r total_projects` projects in total across all departments. Moreover, we identified `r high_perf_n` employees who are standout performers - scoring above 4.0 and completing 10+ projects each. While there is some variation between departments, overall the workforce is performing well.
+TechConnect’s average performance score is 3.97 out of 5, with 612 projects completed, indicating strong organization-wide performance. We identified 23 standout performers (performance > 4.0 with 10+ projects each). Performance varies across departments, with Engineering leading (average ~4.25), while Marketing (~3.86) and HR (~3.76) lag, indicating scope for targeted capability development in latter teams.
+Employee performance increases steadily with experience and stabilizes after ~ 7–8 years. Experienced employees take on more projects and exhibit higher network centrality, indicating expertise, influence, and coordination responsibilities accumulate with tenure. However, at senior levels, project load and communication demands continue to rise while performance gains plateau, suggesting diminishing returns and potential coordination overload. Performance is also strongly associated with project involvement: employees handling higher project loads consistently outperform their peers.
 
 **Network Structure**
 
-Looking at email patterns, `r lcc_n` out of 50 employees are in the main communication cluster. The network shows that employees are willing to network beyond their departments - there is a fair amount of cross-team communication. Furthermore, the communities we detected are separated by departments. While this makes sense intuitively, management may want to make additional efforts to encourage cross-department communication.
+The email network is largely connected through one dominant component, enabling organization-wide information flow. However, community detection shows communication remains strongly clustered by department. This reflects strong within-department coordination but limited cross-functional exchange, creating functional silos that may slow decision-making and increase friction in multi-department initiatives.
 
 **Key Employees**
 
-A few employees stand out as communication hubs: `r hub_names`. They have high betweenness centrality, meaning they connect different parts of the organization. If one of them left the company, it could seriously disrupt how information gets around the network.
+Eve Thompson stands out as a critical communicator, ranking highly across multiple centrality metrics. Her broad connections and bridging position make her departure a significant organizational risk. Nathan and Yuki similarly act as key connectors with high betweenness centrality. Overreliance on them risks company-wide information breakdowns if they become overloaded or leave.
 
 **Recommendations for TechConnect**
 
-1.  **Use your connectors** - The employees with high betweenness centrality are effective choices for spreading important updates or leading cross-functional projects.
+1.  To address siloed communication patterns, TechConnect should define shared OKRs and institutionalize regular cross-functional forums (e.g. monthly syncs) to ensure the organization moves toward a common vision and prevent small disconnects from becoming major bottlenecks.
 
-2.  **Watch for silos** - If any department starts communicating only internally, management may want to address it before it snowballs into significant information discrepancies across departments and serious communication issues.
+2.  Employees with high betweenness centrality (e.g. Eve, Nathan) should be formally deployed as cross-functional coordinators, with clear role definitions and resourcing. To avoid coordination overload as tenure increases, senior employees should focus on high-impact decision-making and mentoring, supported by delegation structures, while mid-tenure staff take on greater project ownership to build capacity.
 
-3.  **Do not forget the quiet high performers** - Some of your best people are not super networked, as shown by the case of Tara Jenkins. Make sure they are still getting recognized and considered for advancement, so that they feel appreciated by the company and continue to contribute to the business.
+3.  Not all top contributors are highly networked. Employees like Tara Jenkins may deliver strong performance but remain under-recognized. Proactively acknowledging their contributions and involving them in strategic initiatives reinforces engagement and supports talent retention.
 
-4.  **Plan for departures** - It is good practice to have a backup plan in case a key bridge employee leaves the organization. Examples include cross-training employees or building additional communication paths.
-
-5.  **Think about teams** - When putting together project teams, consider who already talks to whom. Natural communication patterns can make collaboration smoother.

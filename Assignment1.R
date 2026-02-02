@@ -392,6 +392,56 @@ combined %>%
     n = n()
   )
 
+# Performance by experience level
+perf_by_experience <- combined %>%
+  group_by(years_exp) %>%
+  summarise(
+    n = n(),
+    avg_perf = mean(performance_score, na.rm = TRUE),
+    avg_projects = mean(projects_completed, na.rm = TRUE),
+    avg_degree = mean(degree, na.rm = TRUE),
+    avg_pagerank = mean(pagerank, na.rm = TRUE)
+  ) %>%
+  arrange(years_exp)
+
+perf_by_experience
+
+# Employee performance at TechConnect increases with experience and stabilizes at higher levels
+# after approximately 7–8 years. More experienced employees are not only higher performers but
+# also significantly more central in the internal communication network, suggesting that
+# knowledge, influence, and coordination responsibilities accumulate with tenure.
+
+# At higher experience levels, project load and network centrality continue to rise while
+# performance plateaus, indicating possible coordination overload among senior staff.
+
+
+#Performance vs project load
+perf_by_project_load <- combined %>%
+  mutate(
+    project_band = case_when(
+      projects_completed >= quantile(projects_completed, 0.75, na.rm = TRUE) ~ "High load",
+      projects_completed <= quantile(projects_completed, 0.25, na.rm = TRUE) ~ "Low load",
+      TRUE ~ "Medium load"
+    )
+  ) %>%
+  group_by(project_band) %>%
+  summarise(
+    n = n(),
+    avg_perf = mean(performance_score, na.rm = TRUE),
+    avg_degree = mean(degree, na.rm = TRUE),
+    avg_betweenness = mean(betweenness, na.rm = TRUE)
+  ) %>%
+  arrange(desc(avg_perf))
+
+perf_by_project_load
+
+#High project load employees are both the strongest performers and the most central connectors
+# in the communication network. This indicates that TechConnect relies heavily on a core group
+# of highly connected individuals to deliver outcomes and coordinate work across teams.
+
+#The same group of employees appears to be both performance drivers and communication
+# bottlenecks, creating concentration risk if they become overloaded or leave the organization.
+
 # Communication hubs
 combined %>%
   arrange(desc(betweenness)) %>%
