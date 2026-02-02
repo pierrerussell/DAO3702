@@ -176,7 +176,7 @@ set.seed(45)
 mylayout = layout.auto(email_graph)
 plot(email_graph, layout = mylayout)
 
-par(mar = c(0, 0, 0, 0))
+par(mar = c(1, 1, 2, 1))
 deg <- degree(email_graph)
 plot(email_graph, layout = mylayout, vertex.label = NA,
   vertex.size = sqrt(deg) * 3, edge.width = 0.5,
