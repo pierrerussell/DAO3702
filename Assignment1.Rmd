@@ -287,7 +287,6 @@ plot(email_graph, layout = mylayout, vertex.label = NA,
   main = "Improved Plot")
 ```
 
-
 ### w) Department-colored network
 
 ```{r q2.1w}
@@ -367,6 +366,7 @@ plot(lcc, vertex.label = NA, vertex.label.cex = 0.5,
      edge.width = 0.5, main = "Network (sized by Degree)")
 legend("topright", unique_depts, fill = colors, cex = 0.6, bty = "n")
 ```
+
 ```{r}
 
 ```
@@ -444,8 +444,7 @@ top10 %>%
   select(id, name, deg_r, close_r, btw_r, pr_r)
 ```
 
-Yes, Eve Thompson (ID 5) ranks highly on all metrics. She’s tied-highest on degree (20), has the highest closeness (~0.0299) and highest PageRank (~0.0422) among the top 10 employees by degree, and very high betweenness (~0.288) as well. This pattern shows that Eve is someone who is both broadly connected (degree), centrally positioned in terms of short paths (closeness), frequently sits on key routes between others (betweenness), and is connected to other important nodes (PageRank).
-Other employees, such as Yuki Tanaka (ID 25) and Nathan Lee (ID 14), have high betweenness (~0.283 and ~0.338, respectively) but only moderate degree centrality (11 and 10, respectively), which suggests that they may not know many other employees but are still central to facilitating communication. There are also employees, such as Wendy Clark (ID 23), who have a high PageRank score (~0.040) but moderate closeness centrality (~0.026), which implies that while they may not be able to spread information fast, they have connections with influential people in the network. On the other hand, Grace Okonkwo (ID 7) ranks within the top 10 by degree (11) but has very low betweenness (~0.0057), which fits the idea of being connected within her immediate team, but is not a main connector between different teams.
+Yes, Eve Thompson (ID 5) ranks highly on all metrics. She’s tied-highest on degree (20), has the highest closeness (\~0.0299) and highest PageRank (\~0.0422) among the top 10 employees by degree, and very high betweenness (\~0.288) as well. This pattern shows that Eve is someone who is both broadly connected (degree), centrally positioned in terms of short paths (closeness), frequently sits on key routes between others (betweenness), and is connected to other important nodes (PageRank). Other employees, such as Yuki Tanaka (ID 25) and Nathan Lee (ID 14), have high betweenness (\~0.283 and \~0.338, respectively) but only moderate degree centrality (11 and 10, respectively), which suggests that they may not know many other employees but are still central to facilitating communication. There are also employees, such as Wendy Clark (ID 23), who have a high PageRank score (\~0.040) but moderate closeness centrality (\~0.026), which implies that while they may not be able to spread information fast, they have connections with influential people in the network. On the other hand, Grace Okonkwo (ID 7) ranks within the top 10 by degree (11) but has very low betweenness (\~0.0057), which fits the idea of being connected within her immediate team, but is not a main connector between different teams.
 
 \newpage
 
@@ -499,6 +498,7 @@ xtab
 cat("\nPercentages:\n")
 round(prop.table(xtab, 1) * 100, 1)
 ```
+
 Yes, the detected communities align strongly with departments as each community is dominated by one department. For every community, 100 percent of its members come from a single department, with no mixing across departments. This pattern suggests that communication within the organization is highly siloed. However, this community detection is based on who emails whom, thus it is possible that people still work cross-functionally physically but the email data is still primarily department-based.
 
 ### kk) Business insights
@@ -510,7 +510,6 @@ The community structure highlights the importance of individuals who connect dif
 Community insights can also inform how TechConnect designs cross-functional initiatives. Because collaboration does not emerge organically at the group level, cross-department projects may require explicit communication structures, such as designated liaisons or joint reporting mechanisms, to function effectively.
 
 Finally, understanding community boundaries enables more targeted change management. When rolling out organizational changes, policies, or strategic initiatives, management can engage influential members within each community to improve adoption and reduce miscommunication, rather than relying solely on broad, organization-wide announcements.
-
 
 \newpage
 
@@ -550,7 +549,6 @@ cat("PageRank vs Performance:", round(cor(combined$pagerank, combined$performanc
 Network centrality does have a moderate positive relationship with performance since all four centrality scores are correlated positively with performance, from 0.477 (Betweenness vs Performance) to 0.745 (PageRank vs Performance). PageRank has the strongest relationship with performance, so being connected to other important people seems most related to a better performance. Closeness (0.70) and degree (0.69) are also important to doing well, signaling that shorter distances and number of connections are important to performance. Betweenness (0.48) is weaker, which means bridging between groups is less important than the other centrality scores for performance.
 
 Correlation of degree centrality and performance score is 0.691.
-
 
 ### nn) High performers with low centrality
 
@@ -622,8 +620,9 @@ We analyzed TechConnect’s employees and email communication data to assess per
 
 **Performance Findings**
 
-TechConnect’s average performance score is 3.97 out of 5, with 612 projects completed, indicating strong organization-wide performance. We identified 23 standout performers (performance > 4.0 with 10+ projects each). Performance varies across departments, with Engineering leading (average ~4.25), while Marketing (~3.86) and HR (~3.76) lag, indicating scope for targeted capability development in latter teams.
-Employee performance increases steadily with experience and stabilizes after ~ 7–8 years. Experienced employees take on more projects and exhibit higher network centrality, indicating expertise, influence, and coordination responsibilities accumulate with tenure. However, at senior levels, project load and communication demands continue to rise while performance gains plateau, suggesting diminishing returns and potential coordination overload. Performance is also strongly associated with project involvement: employees handling higher project loads consistently outperform their peers.
+TechConnect’s average performance score is 3.97 out of 5, with 612 projects completed, indicating strong organization-wide performance. We identified 23 standout performers (performance \> 4.0 with 10+ projects each). Performance varies across departments, with Engineering leading (average \~4.25), while Marketing (\~3.86) and HR (\~3.76) lag, indicating scope for targeted capability development in latter teams.
+
+Employee performance increases steadily with experience and stabilizes after approximately 7–8 years. Experienced employees take on more projects and exhibit higher network centrality, indicating expertise, influence, and coordination responsibilities accumulate with tenure. However, at senior levels, project load and communication demands continue to rise while performance gains plateau, suggesting diminishing returns and potential coordination overload. Performance is also strongly associated with project involvement: employees handling higher project loads consistently outperform their peers.
 
 **Network Structure**
 
@@ -635,9 +634,8 @@ Eve Thompson stands out as a critical communicator, ranking highly across multip
 
 **Recommendations for TechConnect**
 
-1.  To address siloed communication patterns, TechConnect should define shared OKRs and institutionalize regular cross-functional forums (e.g. monthly syncs) to ensure the organization moves toward a common vision and prevent small disconnects from becoming major bottlenecks.
+1.  To address siloed communication patterns, TechConnect should define shared OKRs and institutionalize regular cross-functional forums (e.g., monthly syncs) to ensure the organization moves toward a common vision and prevent small disconnects from becoming major bottlenecks.
 
 2.  Employees with high betweenness centrality (e.g. Eve, Nathan) should be formally deployed as cross-functional coordinators, with clear role definitions and resourcing. To avoid coordination overload as tenure increases, senior employees should focus on high-impact decision-making and mentoring, supported by delegation structures, while mid-tenure staff take on greater project ownership to build capacity.
 
 3.  Not all top contributors are highly networked. Employees like Tara Jenkins may deliver strong performance but remain under-recognized. Proactively acknowledging their contributions and involving them in strategic initiatives reinforces engagement and supports talent retention.
-
