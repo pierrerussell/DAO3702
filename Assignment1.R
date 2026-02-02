@@ -9,6 +9,8 @@ library(dplyr)
 library(tibble)
 library(igraph)
 library(RColorBrewer)
+install.packages("tinytex")
+tinytex::install_tinytex()
 
 # ==============================================================================
 # PART 1: DATA WRANGLING (45 pts) test

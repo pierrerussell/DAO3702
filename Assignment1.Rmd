@@ -569,14 +569,45 @@ While employees like Tara Jenkins (employee ID: 46) do great work, they are flyi
 \newpage
 
 ## Question 3.2: Executive Summary
+### Additional Analyses Supporting the Executive Summary**
 
-```{r exec-setup, echo=FALSE}
-avg_perf <- round(mean(employees$performance_score), 2)
-total_projects <- sum(employees$projects_completed)
-high_perf_n <- nrow(employees %>% filter(performance_score > 4.0 & projects_completed >= 10))
-lcc_n <- vcount(lcc)
+This section summarises supporting analyses referenced in the Executive Summary. It provides compact tables for management interpretation.
 
-# Performance by experience level
+**A1. Top performers by combined performance and network position**
+
+The following table highlights employees who rank highly on both performance score and network degree (as a proxy for connectivity).
+
+```{r top-perf-combined, echo=FALSE}
+combined %>%
+  mutate(
+    perf_rank = rank(-performance_score),
+    deg_rank  = rank(-degree)
+  ) %>%
+  arrange(perf_rank + deg_rank) %>%
+  select(name, department, role, performance_score, degree) %>%
+  head(5)
+```
+
+**A2. Department summary with performance and network metrics**
+
+This table summarises average performance and network position by department.
+
+```{r dept-performance-network, echo=FALSE}
+combined %>%
+  group_by(department) %>%
+  summarise(
+    n = n(),
+    avg_perf = mean(performance_score, na.rm = TRUE),
+    avg_deg  = mean(degree, na.rm = TRUE),
+    avg_btw  = mean(betweenness, na.rm = TRUE)
+  ) %>%
+  arrange(desc(avg_perf))
+```
+**A3. Performance by experience level**
+
+To examine how performance and coordination responsibilities evolve with tenure, we analyze average performance, project involvement, and network position across experience levels.
+
+```{r perf-by-exp, echo=FALSE}
 perf_by_experience <- combined %>%
   group_by(years_exp) %>%
   summarise(
@@ -589,8 +620,11 @@ perf_by_experience <- combined %>%
   arrange(years_exp)
 
 perf_by_experience
+```
+**A4. Performance by project load**
 
-#Performance vs project load
+Employees are grouped into low, medium, and high project load bands to assess how workload relates to performance and communication roles.
+```{r perf-by-proj-load, echo=FALSE}
 perf_by_project_load <- combined %>%
   mutate(
     project_band = case_when(
@@ -609,7 +643,12 @@ perf_by_project_load <- combined %>%
   arrange(desc(avg_perf))
 
 perf_by_project_load
+```
+**A5. Key communication hubs**
 
+The following table lists employees with the highest betweenness centrality, highlighting individuals who play critical bridging roles in internal communication.
+
+```{r communication-hubs, echo=FALSE}
 hubs <- combined %>% arrange(desc(betweenness)) %>% head(3)
 hub_names <- paste(hubs$name, collapse = ", ")
 ```
