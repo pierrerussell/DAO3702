@@ -669,11 +669,11 @@ The email network is largely connected through one dominant component, enabling 
 
 **Key Employees**
 
-Eve Thompson stands out as a critical communicator, ranking highly across multiple centrality metrics. Her broad connections and bridging position make her departure a significant organizational risk. Nathan and Yuki similarly act as key connectors with high betweenness centrality. Overreliance on them risks company-wide information breakdowns if they become overloaded or leave.
+Nathan has the highest betweenness, making him a critical bridge in the network. Eve ranks highly across multiple centrality metrics, emerging as the most important overall hub with broad reach, while Yuki and Wendy also serve as key connectors. Overreliance on them creates vulnerability, as overload or exit would disrupt company-wide information flow.
 
-**Recommendations for TechConnect**
+**Recommendations**
 
-1.  To address siloed communication patterns, TechConnect should define shared OKRs and institutionalize regular cross-functional forums (e.g., monthly syncs) to ensure the organization moves toward a common vision and prevent small disconnects from becoming major bottlenecks.
+1.  To address siloed communication patterns, TechConnect should define shared OKRs and institutionalize regular cross-functional forums (e.g., monthly syncs) to ensure organization moves toward a common vision and prevent small disconnects from becoming bottlenecks.
 
 2.  Employees with high betweenness centrality (e.g. Eve, Nathan) should be formally deployed as cross-functional coordinators, with clear role definitions and resourcing. To avoid coordination overload as tenure increases, senior employees should focus on high-impact decision-making and mentoring, supported by delegation structures, while mid-tenure staff take on greater project ownership to build capacity.
 
