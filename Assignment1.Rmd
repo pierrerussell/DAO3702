@@ -568,7 +568,7 @@ While employees like Tara Jenkins (employee ID: 46) do great work, they are flyi
 
 ## Question 3.2: Executive Summary
 
-### Additional Analyses Supporting the Executive Summary\*\*
+### Additional Analyses Supporting the Executive Summary
 
 This section summarises supporting analyses referenced in the Executive Summary. It provides compact tables for management interpretation.
 
