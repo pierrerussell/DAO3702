@@ -647,8 +647,13 @@ perf_by_project_load
 The following table lists employees with the highest betweenness centrality, highlighting individuals who play critical bridging roles in internal communication.
 
 ```{r communication-hubs, echo=FALSE}
-hubs <- combined %>% arrange(desc(betweenness)) %>% head(3)
-hub_names <- paste(hubs$name, collapse = ", ")
+hubs <- 
+combined %>%
+  arrange(desc(betweenness)) %>%
+  select(name, department, role, betweenness, degree, pagerank, closeness, performance_score) %>%
+  head(5)
+
+hubs
 ```
 
 ### Executive Summary for TechConnect Management
