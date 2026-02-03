@@ -567,7 +567,8 @@ While employees like Tara Jenkins (employee ID: 46) do great work, they are flyi
 \newpage
 
 ## Question 3.2: Executive Summary
-### Additional Analyses Supporting the Executive Summary**
+
+### Additional Analyses Supporting the Executive Summary
 
 This section summarises supporting analyses referenced in the Executive Summary. It provides compact tables for management interpretation.
 
@@ -601,6 +602,7 @@ combined %>%
   ) %>%
   arrange(desc(avg_perf))
 ```
+
 **A3. Performance by experience level**
 
 To examine how performance and coordination responsibilities evolve with tenure, we analyze average performance, project involvement, and network position across experience levels.
@@ -619,9 +621,11 @@ perf_by_experience <- combined %>%
 
 perf_by_experience
 ```
+
 **A4. Performance by project load**
 
 Employees are grouped into low, medium, and high project load bands to assess how workload relates to performance and communication roles.
+
 ```{r perf-by-proj-load, echo=FALSE}
 perf_by_project_load <- combined %>%
   mutate(
@@ -642,6 +646,7 @@ perf_by_project_load <- combined %>%
 
 perf_by_project_load
 ```
+
 **A5. Key communication hubs**
 
 The following table lists employees with the highest betweenness centrality, highlighting individuals who play critical bridging roles in internal communication.
