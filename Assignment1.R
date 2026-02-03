@@ -447,7 +447,7 @@ perf_by_project_load
 # Communication hubs
 combined %>%
   arrange(desc(betweenness)) %>%
-  select(name, department, role, degree, betweenness, performance_score) %>%
+  select(name, department, role, betweenness, degree, pagerank, closeness, performance_score) %>%
   head(5)
 
 # ==============================================================================
