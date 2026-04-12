@@ -1,5 +1,5 @@
-Assignment1.R
-Assignment1.Rmd
+Assignment1/Assignment1.R
+Assignment1/Assignment1.Rmd
 Q1_1_data_exploration.R
 Q1_2_selecting_filtering.R
 Q1_3_sorting_ranking.R
@@ -16,3 +16,19 @@ Q3_integration_insights.R
 /.idea/modules.xml
 /.idea/inspectionProfiles/profiles_settings.xml
 /.idea/vcs.xml
+
+# OS files
+.DS_Store
+**/.DS_Store
+
+# Final Project - Large files (too big for GitHub)
+Final Project/data/*.csv
+Final Project/*.html
+Final Project/*.pdf
+Final Project/*.tex
+Final Project/*.log
+Final Project/*.knit.md
+
+# Keep the RMD source and JSON category files
+!Final Project/data/*.json
+!Final Project/*.Rmd
