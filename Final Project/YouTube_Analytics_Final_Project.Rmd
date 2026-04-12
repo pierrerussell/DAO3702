@@ -1,7 +1,7 @@
 ---
 title: "What Makes a YouTube Video Go Viral? A Global Analysis"
 subtitle: "DBA3702: Descriptive Analytics with R - Final Project"
-author: "weRread"
+author: "weRready"
 date: "`r Sys.Date()`"
 output:
   html_document:
