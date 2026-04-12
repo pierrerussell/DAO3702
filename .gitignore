@@ -24,7 +24,7 @@ Q3_integration_insights.R
 # Final Project - Large files (too big for GitHub)
 Final Project/data/*.csv
 Final Project/*.html
-Final Project/*.pdf
+#Final Project/*.pdf
 Final Project/*.tex
 Final Project/*.log
 Final Project/*.knit.md
