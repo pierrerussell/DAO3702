@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="weRready">
+<meta name="dcterms.date" content="2026-02-03">
+
+<title>DBA3702 Assignment 1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../Assignment1_files/libs/clipboard/clipboard.min.js"></script>
+<script src="../Assignment1_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="../Assignment1_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../Assignment1_files/libs/quarto-html/popper.min.js"></script>
+<script src="../Assignment1_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../Assignment1_files/libs/quarto-html/anchor.min.js"></script>
+<link href="../Assignment1_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../Assignment1_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../Assignment1_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="../Assignment1_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../Assignment1_files/libs/bootstrap/bootstrap-3a576e2b93a2c127cfaa5245409d9942.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">DBA3702 Assignment 1</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>weRready </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 3, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div style="page-break-after: always;"></div>
+<section id="part-1-data-wrangling-with-dplyr" class="level1">
+<h1>Part 1: Data Wrangling with dplyr</h1>
+<section id="question-1.1-data-exploration" class="level2">
+<h2 class="anchored" data-anchor-id="question-1.1-data-exploration">Question 1.1: Data Exploration</h2>
+<section id="a-load-packages-and-read-data" class="level3">
+<h3 class="anchored" data-anchor-id="a-load-packages-and-read-data">a) Load packages and read data</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>employees <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/employees.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="b-convert-to-tibble-and-display-first-10-rows" class="level3">
+<h3 class="anchored" data-anchor-id="b-convert-to-tibble-and-display-first-10-rows">b) Convert to tibble and display first 10 rows</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>employees <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(employees)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(employees, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 8
+   employee_id name          department role  years_exp salary performance_score
+         &lt;int&gt; &lt;chr&gt;         &lt;chr&gt;      &lt;chr&gt;     &lt;int&gt;  &lt;int&gt;             &lt;dbl&gt;
+ 1           1 Alice Chen    Engineeri… Seni…         8  95000               4.5
+ 2           2 Bob Martinez  Engineeri… Lead         12 120000               4.8
+ 3           3 Charlie Kim   Engineeri… Juni…         2  65000               3.8
+ 4           4 Diana Patel   Engineeri… Seni…         7  92000               4.2
+ 5           5 Eve Thompson  Engineeri… Mana…        15 140000               4.6
+ 6           6 Frank Liu     Engineeri… Juni…         1  58000               3.2
+ 7           7 Grace Okonkwo Engineeri… Seni…         9  98000               4.4
+ 8           8 Henry Wang    Marketing  Lead         10 105000               4.3
+ 9           9 Iris Nakamura Marketing  Seni…         6  82000               3.9
+10          10 Jack Brown    Marketing  Juni…         2  55000               3.5
+# ℹ 40 more rows
+# ℹ 1 more variable: projects_completed &lt;int&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="c-data-summary" class="level3">
+<h3 class="anchored" data-anchor-id="c-data-summary">c) Data summary</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Rows:"</span>, <span class="fu">nrow</span>(employees), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 50 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Columns:"</span>, <span class="fu">ncol</span>(employees), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Columns: 8 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(employees, typeof)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       employee_id               name         department               role 
+         "integer"        "character"        "character"        "character" 
+         years_exp             salary  performance_score projects_completed 
+         "integer"          "integer"           "double"          "integer" </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(employees)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  employee_id        name            department            role          
+ Min.   : 1.00   Length:50          Length:50          Length:50         
+ 1st Qu.:13.25   Class :character   Class :character   Class :character  
+ Median :25.50   Mode  :character   Mode  :character   Mode  :character  
+ Mean   :25.50                                                           
+ 3rd Qu.:37.75                                                           
+ Max.   :50.00                                                           
+   years_exp         salary       performance_score projects_completed
+ Min.   : 1.00   Min.   : 48000   Min.   :2.900     Min.   : 2.00     
+ 1st Qu.: 3.00   1st Qu.: 65750   1st Qu.:3.600     1st Qu.: 6.00     
+ Median : 6.50   Median : 85000   Median :4.000     Median :11.50     
+ Mean   : 6.68   Mean   : 86420   Mean   :3.970     Mean   :12.24     
+ 3rd Qu.: 9.00   3rd Qu.:101500   3rd Qu.:4.375     3rd Qu.:17.00     
+ Max.   :16.00   Max.   :145000   Max.   :4.900     Max.   :30.00     </code></pre>
+</div>
+</div>
+<p>The dataset includes information about 50 employees with 8 variables. This includes basic information, such as employee name and department, as well as quantitative information, such as salary, years of experience, performance scores, and number of projects completed.</p>
+<div style="page-break-after: always;"></div>
+</section>
+</section>
+<section id="question-1.2-selecting-and-filtering" class="level2">
+<h2 class="anchored" data-anchor-id="question-1.2-selecting-and-filtering">Question 1.2: Selecting and Filtering</h2>
+<section id="d-select-specific-columns" class="level3">
+<h3 class="anchored" data-anchor-id="d-select-specific-columns">d) Select specific columns</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>employees <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name, department, role, performance_score)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 4
+   name          department  role    performance_score
+   &lt;chr&gt;         &lt;chr&gt;       &lt;chr&gt;               &lt;dbl&gt;
+ 1 Alice Chen    Engineering Senior                4.5
+ 2 Bob Martinez  Engineering Lead                  4.8
+ 3 Charlie Kim   Engineering Junior                3.8
+ 4 Diana Patel   Engineering Senior                4.2
+ 5 Eve Thompson  Engineering Manager               4.6
+ 6 Frank Liu     Engineering Junior                3.2
+ 7 Grace Okonkwo Engineering Senior                4.4
+ 8 Henry Wang    Marketing   Lead                  4.3
+ 9 Iris Nakamura Marketing   Senior                3.9
+10 Jack Brown    Marketing   Junior                3.5
+# ℹ 40 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="e-select-employees-with-performance-4.0" class="level3">
+<h3 class="anchored" data-anchor-id="e-select-employees-with-performance-4.0">e) Select employees with performance &gt; 4.0</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>high_performers <span class="ot">&lt;-</span> employees <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(performance_score <span class="sc">&gt;</span> <span class="fl">4.0</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>high_performers</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 23 × 8
+   employee_id name          department role  years_exp salary performance_score
+         &lt;int&gt; &lt;chr&gt;         &lt;chr&gt;      &lt;chr&gt;     &lt;int&gt;  &lt;int&gt;             &lt;dbl&gt;
+ 1           1 Alice Chen    Engineeri… Seni…         8  95000               4.5
+ 2           2 Bob Martinez  Engineeri… Lead         12 120000               4.8
+ 3           4 Diana Patel   Engineeri… Seni…         7  92000               4.2
+ 4           5 Eve Thompson  Engineeri… Mana…        15 140000               4.6
+ 5           7 Grace Okonkwo Engineeri… Seni…         9  98000               4.4
+ 6           8 Henry Wang    Marketing  Lead         10 105000               4.3
+ 7          11 Kate Wilson   Marketing  Mana…        14 125000               4.5
+ 8          14 Nathan Lee    Sales      Lead         11 115000               4.7
+ 9          15 Olivia Davis  Sales      Seni…         8  88000               4.1
+10          18 Rachel Green  Sales      Mana…        13 130000               4.4
+# ℹ 13 more rows
+# ℹ 1 more variable: projects_completed &lt;int&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="f-select-employees-in-engineeringmarketing-with-5-years-experience" class="level3">
+<h3 class="anchored" data-anchor-id="f-select-employees-in-engineeringmarketing-with-5-years-experience">f) Select employees in Engineering/Marketing with &gt; 5 years experience</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>employees <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>((department <span class="sc">==</span> <span class="st">"Engineering"</span> <span class="sc">|</span> department <span class="sc">==</span> <span class="st">"Marketing"</span>) <span class="sc">&amp;</span> years_exp <span class="sc">&gt;</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 14 × 8
+   employee_id name          department role  years_exp salary performance_score
+         &lt;int&gt; &lt;chr&gt;         &lt;chr&gt;      &lt;chr&gt;     &lt;int&gt;  &lt;int&gt;             &lt;dbl&gt;
+ 1           1 Alice Chen    Engineeri… Seni…         8  95000               4.5
+ 2           2 Bob Martinez  Engineeri… Lead         12 120000               4.8
+ 3           4 Diana Patel   Engineeri… Seni…         7  92000               4.2
+ 4           5 Eve Thompson  Engineeri… Mana…        15 140000               4.6
+ 5           7 Grace Okonkwo Engineeri… Seni…         9  98000               4.4
+ 6           8 Henry Wang    Marketing  Lead         10 105000               4.3
+ 7           9 Iris Nakamura Marketing  Seni…         6  82000               3.9
+ 8          11 Kate Wilson   Marketing  Mana…        14 125000               4.5
+ 9          31 Eric Zhang    Engineeri… Seni…         6  88000               4  
+10          33 George Park   Marketing  Seni…         7  80000               3.7
+11          41 Oscar Rivera  Engineeri… Lead         11 118000               4.5
+12          42 Paula Hughes  Engineeri… Mana…        16 145000               4.9
+13          43 Quentin Price Marketing  Lead          8 100000               4.1
+14          47 Ulrich Weber  Engineeri… Seni…         7  94000               4.2
+# ℹ 1 more variable: projects_completed &lt;int&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="g-select-columns-using-helpers" class="level3">
+<h3 class="anchored" data-anchor-id="g-select-columns-using-helpers">g) Select columns using helpers</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>employees <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">contains</span>(<span class="st">"score"</span>) <span class="sc">|</span> <span class="fu">starts_with</span>(<span class="st">"p"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 2
+   performance_score projects_completed
+               &lt;dbl&gt;              &lt;int&gt;
+ 1               4.5                 15
+ 2               4.8                 22
+ 3               3.8                  5
+ 4               4.2                 12
+ 5               4.6                 28
+ 6               3.2                  3
+ 7               4.4                 16
+ 8               4.3                 18
+ 9               3.9                 11
+10               3.5                  4
+# ℹ 40 more rows</code></pre>
+</div>
+</div>
+<p>There are two columns, <em>performance_score</em> and <em>projects_completed</em>, that meet the given condition.</p>
+<div style="page-break-after: always;"></div>
+</section>
+</section>
+<section id="question-1.3-sorting-and-ranking" class="level2">
+<h2 class="anchored" data-anchor-id="question-1.3-sorting-and-ranking">Question 1.3: Sorting and Ranking</h2>
+<section id="h-identify-top-5-highest-paid-employees" class="level3">
+<h3 class="anchored" data-anchor-id="h-identify-top-5-highest-paid-employees">h) Identify top 5 highest-paid employees</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>employees <span class="sc">%&gt;%</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(salary)) <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 8
+  employee_id name         department  role   years_exp salary performance_score
+        &lt;int&gt; &lt;chr&gt;        &lt;chr&gt;       &lt;chr&gt;      &lt;int&gt;  &lt;int&gt;             &lt;dbl&gt;
+1          42 Paula Hughes Engineering Manag…        16 145000               4.9
+2           5 Eve Thompson Engineering Manag…        15 140000               4.6
+3          28 Bella Moore  Finance     Manag…        14 135000               4.7
+4          18 Rachel Green Sales       Manag…        13 130000               4.4
+5          11 Kate Wilson  Marketing   Manag…        14 125000               4.5
+# ℹ 1 more variable: projects_completed &lt;int&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="i-sort-by-department-then-performance" class="level3">
+<h3 class="anchored" data-anchor-id="i-sort-by-department-then-performance">i) Sort by department, then performance</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>employees <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(department, <span class="fu">desc</span>(performance_score))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 8
+   employee_id name          department role  years_exp salary performance_score
+         &lt;int&gt; &lt;chr&gt;         &lt;chr&gt;      &lt;chr&gt;     &lt;int&gt;  &lt;int&gt;             &lt;dbl&gt;
+ 1          42 Paula Hughes  Engineeri… Mana…        16 145000               4.9
+ 2           2 Bob Martinez  Engineeri… Lead         12 120000               4.8
+ 3           5 Eve Thompson  Engineeri… Mana…        15 140000               4.6
+ 4           1 Alice Chen    Engineeri… Seni…         8  95000               4.5
+ 5          41 Oscar Rivera  Engineeri… Lead         11 118000               4.5
+ 6           7 Grace Okonkwo Engineeri… Seni…         9  98000               4.4
+ 7           4 Diana Patel   Engineeri… Seni…         7  92000               4.2
+ 8          47 Ulrich Weber  Engineeri… Seni…         7  94000               4.2
+ 9          31 Eric Zhang    Engineeri… Seni…         6  88000               4  
+10          32 Fiona O'Brien Engineeri… Juni…         3  68000               3.9
+# ℹ 40 more rows
+# ℹ 1 more variable: projects_completed &lt;int&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="j-identify-employee-with-lowest-salary-in-each-department" class="level3">
+<h3 class="anchored" data-anchor-id="j-identify-employee-with-lowest-salary-in-each-department">j) Identify employee with lowest salary in each department</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>employees <span class="sc">%&gt;%</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(department, salary) <span class="sc">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(department) <span class="sc">%&gt;%</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 8
+  employee_id name           department role  years_exp salary performance_score
+        &lt;int&gt; &lt;chr&gt;          &lt;chr&gt;      &lt;chr&gt;     &lt;int&gt;  &lt;int&gt;             &lt;dbl&gt;
+1           6 Frank Liu      Engineeri… Juni…         1  58000               3.2
+2          30 Dana Hill      Finance    Juni…         1  55000               3  
+3          22 Victor Nguyen  HR         Juni…         1  48000               3.1
+4          13 Maya Rodriguez Marketing  Juni…         1  52000               3.3
+5          36 Julia Foster   Sales      Juni…         1  53000               2.9
+# ℹ 1 more variable: projects_completed &lt;int&gt;</code></pre>
+</div>
+</div>
+<div style="page-break-after: always;"></div>
+</section>
+</section>
+<section id="question-1.4-creating-new-variables" class="level2">
+<h2 class="anchored" data-anchor-id="question-1.4-creating-new-variables">Question 1.4: Creating New Variables</h2>
+<section id="k-salary-per-year-of-experience" class="level3">
+<h3 class="anchored" data-anchor-id="k-salary-per-year-of-experience">k) Salary per year of experience</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>employees <span class="sc">%&gt;%</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">salary_per_year_exp =</span> salary <span class="sc">/</span> years_exp) <span class="sc">%&gt;%</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name, salary, years_exp, salary_per_year_exp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 4
+   name          salary years_exp salary_per_year_exp
+   &lt;chr&gt;          &lt;int&gt;     &lt;int&gt;               &lt;dbl&gt;
+ 1 Alice Chen     95000         8              11875 
+ 2 Bob Martinez  120000        12              10000 
+ 3 Charlie Kim    65000         2              32500 
+ 4 Diana Patel    92000         7              13143.
+ 5 Eve Thompson  140000        15               9333.
+ 6 Frank Liu      58000         1              58000 
+ 7 Grace Okonkwo  98000         9              10889.
+ 8 Henry Wang    105000        10              10500 
+ 9 Iris Nakamura  82000         6              13667.
+10 Jack Brown     55000         2              27500 
+# ℹ 40 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="l-performance-category" class="level3">
+<h3 class="anchored" data-anchor-id="l-performance-category">l) Performance category</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>employees_cat <span class="ot">&lt;-</span> employees <span class="sc">%&gt;%</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">performance_category =</span> <span class="fu">case_when</span>(</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    performance_score <span class="sc">&gt;=</span> <span class="fl">4.5</span> <span class="sc">~</span> <span class="st">"Outstanding"</span>,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    performance_score <span class="sc">&gt;=</span> <span class="fl">3.5</span> <span class="sc">~</span> <span class="st">"Exceeds Expectations"</span>,</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    performance_score <span class="sc">&gt;=</span> <span class="fl">2.5</span> <span class="sc">~</span> <span class="st">"Meets Expectations"</span>,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Needs Improvement"</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>employees_cat <span class="sc">%&gt;%</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name, performance_score, performance_category)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 3
+   name          performance_score performance_category
+   &lt;chr&gt;                     &lt;dbl&gt; &lt;chr&gt;               
+ 1 Alice Chen                  4.5 Outstanding         
+ 2 Bob Martinez                4.8 Outstanding         
+ 3 Charlie Kim                 3.8 Exceeds Expectations
+ 4 Diana Patel                 4.2 Exceeds Expectations
+ 5 Eve Thompson                4.6 Outstanding         
+ 6 Frank Liu                   3.2 Meets Expectations  
+ 7 Grace Okonkwo               4.4 Exceeds Expectations
+ 8 Henry Wang                  4.3 Exceeds Expectations
+ 9 Iris Nakamura               3.9 Exceeds Expectations
+10 Jack Brown                  3.5 Exceeds Expectations
+# ℹ 40 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="m-experience-level" class="level3">
+<h3 class="anchored" data-anchor-id="m-experience-level">m) Experience level</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>employees_exp <span class="ot">&lt;-</span> employees <span class="sc">%&gt;%</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">experience_level =</span> <span class="fu">case_when</span>(</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    years_exp <span class="sc">&lt;=</span> <span class="dv">3</span> <span class="sc">~</span> <span class="st">"Entry"</span>,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    years_exp <span class="sc">&lt;=</span> <span class="dv">7</span> <span class="sc">~</span> <span class="st">"Mid"</span>,</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    years_exp <span class="sc">&lt;=</span> <span class="dv">12</span> <span class="sc">~</span> <span class="st">"Senior"</span>,</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Expert"</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>employees_exp <span class="sc">%&gt;%</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name, years_exp, experience_level)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 3
+   name          years_exp experience_level
+   &lt;chr&gt;             &lt;int&gt; &lt;chr&gt;           
+ 1 Alice Chen            8 Senior          
+ 2 Bob Martinez         12 Senior          
+ 3 Charlie Kim           2 Entry           
+ 4 Diana Patel           7 Mid             
+ 5 Eve Thompson         15 Expert          
+ 6 Frank Liu             1 Entry           
+ 7 Grace Okonkwo         9 Senior          
+ 8 Henry Wang           10 Senior          
+ 9 Iris Nakamura         6 Mid             
+10 Jack Brown            2 Entry           
+# ℹ 40 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="n-high-performer-flag" class="level3">
+<h3 class="anchored" data-anchor-id="n-high-performer-flag">n) High performer flag</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>employees <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">is_high_performer =</span> performance_score <span class="sc">&gt;</span> <span class="fl">4.0</span> <span class="sc">&amp;</span> projects_completed <span class="sc">&gt;=</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(is_high_performer) <span class="sc">%&gt;%</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name, department, performance_score, projects_completed)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 23 × 4
+   name          department  performance_score projects_completed
+   &lt;chr&gt;         &lt;chr&gt;                   &lt;dbl&gt;              &lt;int&gt;
+ 1 Alice Chen    Engineering               4.5                 15
+ 2 Bob Martinez  Engineering               4.8                 22
+ 3 Diana Patel   Engineering               4.2                 12
+ 4 Eve Thompson  Engineering               4.6                 28
+ 5 Grace Okonkwo Engineering               4.4                 16
+ 6 Henry Wang    Marketing                 4.3                 18
+ 7 Kate Wilson   Marketing                 4.5                 24
+ 8 Nathan Lee    Sales                     4.7                 21
+ 9 Olivia Davis  Sales                     4.1                 14
+10 Rachel Green  Sales                     4.4                 25
+# ℹ 13 more rows</code></pre>
+</div>
+</div>
+<div style="page-break-after: always;"></div>
+</section>
+</section>
+<section id="question-1.5-aggregation-and-grouping" class="level2">
+<h2 class="anchored" data-anchor-id="question-1.5-aggregation-and-grouping">Question 1.5: Aggregation and Grouping</h2>
+<section id="o-company-wide-summary" class="level3">
+<h3 class="anchored" data-anchor-id="o-company-wide-summary">o) Company-wide summary</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>employees <span class="sc">%&gt;%</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_employees =</span> <span class="fu">n</span>(),</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_salary =</span> <span class="fu">mean</span>(salary),</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_performance =</span> <span class="fu">mean</span>(performance_score),</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_projects =</span> <span class="fu">sum</span>(projects_completed)</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  total_employees avg_salary avg_performance total_projects
+            &lt;int&gt;      &lt;dbl&gt;           &lt;dbl&gt;          &lt;int&gt;
+1              50      86420            3.97            612</code></pre>
+</div>
+</div>
+</section>
+<section id="p-summary-by-department" class="level3">
+<h3 class="anchored" data-anchor-id="p-summary-by-department">p) Summary by department</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>employees <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(department) <span class="sc">%&gt;%</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">count =</span> <span class="fu">n</span>(),</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_salary =</span> <span class="fu">mean</span>(salary),</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_perf =</span> <span class="fu">mean</span>(performance_score),</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">min_exp =</span> <span class="fu">min</span>(years_exp),</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">max_exp =</span> <span class="fu">max</span>(years_exp)</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 6
+  department  count avg_salary avg_perf min_exp max_exp
+  &lt;chr&gt;       &lt;int&gt;      &lt;dbl&gt;    &lt;dbl&gt;   &lt;int&gt;   &lt;int&gt;
+1 Engineering    12     98417.     4.25       1      16
+2 Finance         9     86333.     3.96       1      14
+3 HR              9     75556.     3.76       1      12
+4 Marketing      10     80700      3.86       1      14
+5 Sales          10     87600      3.95       1      13</code></pre>
+</div>
+</div>
+</section>
+<section id="q-summary-by-department-and-role" class="level3">
+<h3 class="anchored" data-anchor-id="q-summary-by-department-and-role">q) Summary by department and role</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>dept_role <span class="ot">&lt;-</span> employees <span class="sc">%&gt;%</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(department, role) <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">avg_salary =</span> <span class="fu">mean</span>(salary), <span class="at">count =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(avg_salary))</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>dept_role</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 4
+   department  role    avg_salary count
+   &lt;chr&gt;       &lt;chr&gt;        &lt;dbl&gt; &lt;int&gt;
+ 1 Engineering Manager    142500      2
+ 2 Finance     Manager    135000      1
+ 3 Sales       Manager    130000      1
+ 4 Marketing   Manager    125000      1
+ 5 Engineering Lead       119000      2
+ 6 Sales       Lead       113500      2
+ 7 HR          Manager    110000      1
+ 8 Finance     Lead       105000      2
+ 9 Marketing   Lead       102500      2
+10 HR          Lead        93500      2
+11 Engineering Senior      93400      5
+12 Sales       Senior      87250      4
+13 Finance     Senior      85667.     3
+14 Marketing   Senior      79000      4
+15 HR          Senior      71250      4
+16 Engineering Junior      63667.     3
+17 Finance     Junior      58333.     3
+18 Sales       Junior      56667.     3
+19 Marketing   Junior      53667.     3
+20 HR          Junior      49000      2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Highest combo:</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>dept_role <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  department  role    avg_salary count
+  &lt;chr&gt;       &lt;chr&gt;        &lt;dbl&gt; &lt;int&gt;
+1 Engineering Manager     142500     2</code></pre>
+</div>
+</div>
+<p>Managers in the Engineering department have the highest salary on average.</p>
+</section>
+<section id="r-individual-employees-salary-as-of-department-average" class="level3">
+<h3 class="anchored" data-anchor-id="r-individual-employees-salary-as-of-department-average">r) Individual employees’ salary as % of department average</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>employees <span class="sc">%&gt;%</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(department) <span class="sc">%&gt;%</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">dept_avg =</span> <span class="fu">mean</span>(salary),</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">pct_of_avg =</span> salary <span class="sc">/</span> dept_avg <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(pct_of_avg)) <span class="sc">%&gt;%</span></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name, department, salary, dept_avg, pct_of_avg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 5
+   name          department  salary dept_avg pct_of_avg
+   &lt;chr&gt;         &lt;chr&gt;        &lt;int&gt;    &lt;dbl&gt;      &lt;dbl&gt;
+ 1 Bella Moore   Finance     135000   86333.       156.
+ 2 Kate Wilson   Marketing   125000   80700        155.
+ 3 Rachel Green  Sales       130000   87600        148.
+ 4 Paula Hughes  Engineering 145000   98417.       147.
+ 5 Wendy Clark   HR          110000   75556.       146.
+ 6 Eve Thompson  Engineering 140000   98417.       142.
+ 7 Nathan Lee    Sales       115000   87600        131.
+ 8 Henry Wang    Marketing   105000   80700        130.
+ 9 Rosa Martinez Sales       112000   87600        128.
+10 Tina White    HR           95000   75556.       126.
+# ℹ 40 more rows</code></pre>
+</div>
+</div>
+<p>Bella Moore from Finance department earns the most relative to their department’s average, with a relative percentage of 156.37%.</p>
+</section>
+<section id="s-top-3-departments-by-performance-only-considering-employees-with-3-years-of-experience" class="level3">
+<h3 class="anchored" data-anchor-id="s-top-3-departments-by-performance-only-considering-employees-with-3-years-of-experience">s) Top 3 departments by performance (only considering employees with 3+ years of experience)</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>employees <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(years_exp <span class="sc">&gt;=</span> <span class="dv">3</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(department) <span class="sc">%&gt;%</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">avg_perf =</span> <span class="fu">mean</span>(performance_score)) <span class="sc">%&gt;%</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(avg_perf)) <span class="sc">%&gt;%</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  department  avg_perf
+  &lt;chr&gt;          &lt;dbl&gt;
+1 Engineering     4.4 
+2 Finance         4.3 
+3 Sales           4.15</code></pre>
+</div>
+</div>
+<p>Only taking into account the work of employees with 3 or more years of experience, the Engineering, Finance, and Sales departments show the best average performance.</p>
+<div style="page-break-after: always;"></div>
+</section>
+</section>
+</section>
+<section id="part-2-social-network-analysis" class="level1">
+<h1>Part 2: Social Network Analysis</h1>
+<section id="question-2.1-network-construction-and-visualization" class="level2">
+<h2 class="anchored" data-anchor-id="question-2.1-network-construction-and-visualization">Question 2.1: Network Construction and Visualization</h2>
+<section id="t-load-network-data" class="level3">
+<h3 class="anchored" data-anchor-id="t-load-network-data">t) Load network data</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(igraph)</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>email_nodes <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/email_nodes.csv"</span>)</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>email_edges <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/email_edges.csv"</span>)</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(email_nodes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  id  department    role
+1  1 Engineering  Senior
+2  2 Engineering    Lead
+3  3 Engineering  Junior
+4  4 Engineering  Senior
+5  5 Engineering Manager
+6  6 Engineering  Junior</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(email_edges)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  from to weight
+1    1  2     25
+2    1  3     15
+3    1  4     20
+4    1  5     30
+5    1  7     18
+6    2  3     22</code></pre>
+</div>
+</div>
+</section>
+<section id="u-construct-undirected-graph" class="level3">
+<h3 class="anchored" data-anchor-id="u-construct-undirected-graph">u) Construct undirected graph</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>email_graph <span class="ot">&lt;-</span> <span class="fu">graph.data.frame</span>(email_edges, <span class="at">vertices =</span> email_nodes, <span class="at">directed =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Nodes:"</span>, <span class="fu">vcount</span>(email_graph), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Nodes: 50 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Edges:"</span>, <span class="fu">ecount</span>(email_graph), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Edges: 207 </code></pre>
+</div>
+</div>
+</section>
+<section id="v-create-plot-of-network" class="level3">
+<h3 class="anchored" data-anchor-id="v-create-plot-of-network">v) Create plot of network</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v) Improved plot</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">45</span>)</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>mylayout <span class="ot">&lt;-</span> <span class="fu">layout.auto</span>(email_graph)</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Basic plot</span></span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(email_graph, <span class="at">layout =</span> mylayout)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Assignment1_files/figure-html/part_v-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Improved plot</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>))</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>deg <span class="ot">&lt;-</span> <span class="fu">degree</span>(email_graph)</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(email_graph, <span class="at">layout =</span> mylayout, <span class="at">vertex.label =</span> <span class="cn">NA</span>,</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">vertex.size =</span> <span class="fu">sqrt</span>(deg) <span class="sc">*</span> <span class="dv">3</span>, <span class="at">edge.width =</span> <span class="fl">0.5</span>,</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">main =</span> <span class="st">"Improved Plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Assignment1_files/figure-html/part_v-2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="w-department-colored-network" class="level3">
+<h3 class="anchored" data-anchor-id="w-department-colored-network">w) Department-colored network</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>depts <span class="ot">&lt;-</span> <span class="fu">V</span>(email_graph)<span class="sc">$</span>department</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>unique_depts <span class="ot">&lt;-</span> <span class="fu">unique</span>(depts)</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">brewer.pal</span>(<span class="fu">length</span>(unique_depts), <span class="st">"Set1"</span>)</span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(colors) <span class="ot">&lt;-</span> unique_depts</span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>))</span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(email_graph, <span class="at">vertex.label =</span> <span class="cn">NA</span>, <span class="at">vertex.size =</span> <span class="fu">sqrt</span>(deg) <span class="sc">*</span> <span class="dv">2</span>,</span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> colors[depts], <span class="at">edge.width =</span> <span class="fl">0.5</span>,</span>
+<span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Network (colored by Department)"</span>)</span>
+<span id="cb56-10"><a href="#cb56-10" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, unique_depts, <span class="at">fill =</span> colors, <span class="at">cex =</span> <span class="fl">0.7</span>, <span class="at">bty =</span> <span class="st">"n"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Assignment1_files/figure-html/q2.1w-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+<div style="page-break-after: always;"></div>
+</section>
+</section>
+<section id="question-2.2-connected-components" class="level2">
+<h2 class="anchored" data-anchor-id="question-2.2-connected-components">Question 2.2: Connected Components</h2>
+<section id="x-find-connected-components" class="level3">
+<h3 class="anchored" data-anchor-id="x-find-connected-components">x) Find connected components</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>comp <span class="ot">&lt;-</span> <span class="fu">components</span>(email_graph)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Number of components:"</span>, comp<span class="sc">$</span>no, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Number of components: 1 </code></pre>
+</div>
+</div>
+</section>
+<section id="y-largest-component-size" class="level3">
+<h3 class="anchored" data-anchor-id="y-largest-component-size">y) Largest component size</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>lcc_size <span class="ot">&lt;-</span> <span class="fu">max</span>(comp<span class="sc">$</span>csize)</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Largest component:"</span>, lcc_size, <span class="st">"employees</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Largest component: 50 employees</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">round</span>(lcc_size <span class="sc">/</span> <span class="fu">vcount</span>(email_graph) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">1</span>), <span class="st">"% of employees are in this component</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>100 % of employees are in this component</code></pre>
+</div>
+</div>
+</section>
+<section id="z-extract-and-plot-largest-component" class="level3">
+<h3 class="anchored" data-anchor-id="z-extract-and-plot-largest-component">z) Extract and plot largest component</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>lcc_id <span class="ot">&lt;-</span> <span class="fu">which.max</span>(comp<span class="sc">$</span>csize)</span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>lcc_nodes <span class="ot">&lt;-</span> <span class="fu">which</span>(comp<span class="sc">$</span>membership <span class="sc">==</span> lcc_id)</span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>lcc <span class="ot">&lt;-</span> <span class="fu">induced_subgraph</span>(email_graph, lcc_nodes)</span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"LCC has"</span>, <span class="fu">vcount</span>(lcc), <span class="st">"nodes and"</span>, <span class="fu">ecount</span>(lcc), <span class="st">"edges</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>LCC has 50 nodes and 207 edges</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>deg_lcc <span class="ot">&lt;-</span> <span class="fu">degree</span>(lcc)</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>depts_lcc <span class="ot">&lt;-</span> <span class="fu">V</span>(lcc)<span class="sc">$</span>department</span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>))</span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lcc, <span class="at">vertex.label =</span> <span class="cn">NA</span>, <span class="at">vertex.size =</span> <span class="fu">sqrt</span>(deg_lcc) <span class="sc">*</span> <span class="dv">2</span>,</span>
+<span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> colors[depts_lcc], <span class="at">edge.width =</span> <span class="fl">0.5</span>,</span>
+<span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Largest Connected Component"</span>)</span>
+<span id="cb65-8"><a href="#cb65-8" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, unique_depts, <span class="at">fill =</span> colors, <span class="at">cex =</span> <span class="fl">0.7</span>, <span class="at">bty =</span> <span class="st">"n"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Assignment1_files/figure-html/q2.2z-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="aa-why-use-the-largest-connected-component" class="level3">
+<h3 class="anchored" data-anchor-id="aa-why-use-the-largest-connected-component">aa) Why use the largest connected component?</h3>
+<p>To calculate closeness centrality of nodes, every node must be reachable from every other node. If selected nodes are in different components (i.e., graph is disconnected), some distances become infinite or undefined and the calculation breaks. Focusing on the largest component helps avoid this problem and gives meaningful values that can be interpreted and compared. When computing closeness on the largest connected component, within the largest connected component, every node can reach every other node, so the closeness values are properly defined and thus, we can compare them fairly.</p>
+<div style="page-break-after: always;"></div>
+</section>
+</section>
+<section id="question-2.3-centrality-metrics" class="level2">
+<h2 class="anchored" data-anchor-id="question-2.3-centrality-metrics">Question 2.3: Centrality Metrics</h2>
+<section id="bb-degree-centrality" class="level3">
+<h3 class="anchored" data-anchor-id="bb-degree-centrality">bb) Degree Centrality</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>deg_cent <span class="ot">&lt;-</span> <span class="fu">degree</span>(lcc)</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>deg_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">id =</span> <span class="fu">as.integer</span>(<span class="fu">V</span>(lcc)<span class="sc">$</span>name), <span class="at">degree =</span> deg_cent) <span class="sc">%&gt;%</span></span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(employees <span class="sc">%&gt;%</span> <span class="fu">select</span>(employee_id, name), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span> <span class="ot">=</span> <span class="st">"employee_id"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, name, degree) <span class="sc">%&gt;%</span></span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(degree))</span>
+<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Top 5 by degree:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Top 5 by degree:</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(deg_df, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  id         name degree
+1  5 Eve Thompson     20
+2 28  Bella Moore     20
+3 11  Kate Wilson     18
+4 18 Rachel Green     18
+5 23  Wendy Clark     18</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>))</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lcc, <span class="at">vertex.label =</span> <span class="cn">NA</span>, <span class="at">vertex.label.cex =</span> <span class="fl">0.5</span>,</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">sqrt</span>(deg_cent), <span class="at">vertex.color =</span> colors[depts_lcc],</span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="fl">0.5</span>, <span class="at">main =</span> <span class="st">"Network (sized by Degree)"</span>)</span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, unique_depts, <span class="at">fill =</span> colors, <span class="at">cex =</span> <span class="fl">0.6</span>, <span class="at">bty =</span> <span class="st">"n"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Assignment1_files/figure-html/q2.3bb-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="cc-closeness-centrality" class="level3">
+<h3 class="anchored" data-anchor-id="cc-closeness-centrality">cc) Closeness Centrality</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>close_cent <span class="ot">&lt;-</span> <span class="fu">closeness</span>(lcc, <span class="at">normalized =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>close_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">id =</span> <span class="fu">as.integer</span>(<span class="fu">V</span>(lcc)<span class="sc">$</span>name), <span class="at">closeness =</span> close_cent) <span class="sc">%&gt;%</span></span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(employees <span class="sc">%&gt;%</span> <span class="fu">select</span>(employee_id, name), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span> <span class="ot">=</span> <span class="st">"employee_id"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, name, closeness) <span class="sc">%&gt;%</span></span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(closeness))</span>
+<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Top 5 by closeness:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Top 5 by closeness:</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(close_df, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  id         name  closeness
+1  5 Eve Thompson 0.02985984
+2 25  Yuki Tanaka 0.02925373
+3 14   Nathan Lee 0.02920143
+4 11  Kate Wilson 0.02884049
+5 28  Bella Moore 0.02719201</code></pre>
+</div>
+</div>
+<p>High closeness centrality means the employee is “near” a lot of other people in the network, so they can reach others quickly and information can get to them quickly too. In practical terms, they are usually well-positioned for fast coordination and spreading updates across the organization, even if they’re not necessarily the main bridge between different groups.</p>
+</section>
+<section id="dd-betweenness-centrality" class="level3">
+<h3 class="anchored" data-anchor-id="dd-betweenness-centrality">dd) Betweenness Centrality</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>btw_cent <span class="ot">&lt;-</span> <span class="fu">betweenness</span>(lcc, <span class="at">normalized =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>btw_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">id =</span> <span class="fu">as.integer</span>(<span class="fu">V</span>(lcc)<span class="sc">$</span>name), <span class="at">betweenness =</span> btw_cent) <span class="sc">%&gt;%</span></span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(employees <span class="sc">%&gt;%</span> <span class="fu">select</span>(employee_id, name), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span> <span class="ot">=</span> <span class="st">"employee_id"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, name, betweenness) <span class="sc">%&gt;%</span></span>
+<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(betweenness))</span>
+<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Top 5 by betweenness:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Top 5 by betweenness:</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(btw_df, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  id         name betweenness
+1 14   Nathan Lee   0.3380244
+2  5 Eve Thompson   0.2884010
+3 25  Yuki Tanaka   0.2833759
+4 23  Wendy Clark   0.2789116
+5  2 Bob Martinez   0.2268282</code></pre>
+</div>
+</div>
+<p>Betweenness centrality measures how often an employee sits in the middle of the shortest routes connecting other employees. Thus, if someone has high betweenness, they usually act as a bridge between different clusters or teams, meaning they can connect communities that may otherwise be disconnected and shape how information moves across the organization, and if they step out or disengage, communication between groups can slow down or become more fragmented.</p>
+</section>
+<section id="ee-pagerank" class="level3">
+<h3 class="anchored" data-anchor-id="ee-pagerank">ee) PageRank</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">page_rank</span>(lcc)<span class="sc">$</span>vector</span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>pr_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">id =</span> <span class="fu">as.integer</span>(<span class="fu">V</span>(lcc)<span class="sc">$</span>name), <span class="at">pagerank =</span> pr) <span class="sc">%&gt;%</span></span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(employees <span class="sc">%&gt;%</span> <span class="fu">select</span>(employee_id, name), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span> <span class="ot">=</span> <span class="st">"employee_id"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, name, pagerank) <span class="sc">%&gt;%</span></span>
+<span id="cb79-5"><a href="#cb79-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(pagerank))</span>
+<span id="cb79-6"><a href="#cb79-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb79-7"><a href="#cb79-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Top 5 by PageRank:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Top 5 by PageRank:</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(pr_df, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  id         name   pagerank
+1  5 Eve Thompson 0.04219373
+2 23  Wendy Clark 0.04049384
+3 28  Bella Moore 0.03937716
+4 18 Rachel Green 0.03930274
+5 11  Kate Wilson 0.03894129</code></pre>
+</div>
+</div>
+<p>Degree centrality is the direct count of how many people an employee is connected to. PageRank is different because it also cares who those connections are with, meaning being connected to important people boosts the score more than being connected to less influential ones. In practical terms, a high degree can mean talking to a lot of people, but PageRank can still rate someone highly even with fewer connections if those connections are to very influential people (higher quality links).</p>
+</section>
+<section id="ff-comparing-all-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="ff-comparing-all-metrics">ff) Comparing all metrics</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>all_cent <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">id =</span> <span class="fu">as.integer</span>(<span class="fu">V</span>(lcc)<span class="sc">$</span>name),</span>
+<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">degree =</span> deg_cent,</span>
+<span id="cb83-4"><a href="#cb83-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">closeness =</span> close_cent,</span>
+<span id="cb83-5"><a href="#cb83-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">betweenness =</span> btw_cent,</span>
+<span id="cb83-6"><a href="#cb83-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">pagerank =</span> pr</span>
+<span id="cb83-7"><a href="#cb83-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb83-8"><a href="#cb83-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(employees <span class="sc">%&gt;%</span> <span class="fu">select</span>(employee_id, name, department, role),</span>
+<span id="cb83-9"><a href="#cb83-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span> <span class="ot">=</span> <span class="st">"employee_id"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb83-10"><a href="#cb83-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, name, <span class="at">dept =</span> department, role, degree, closeness, betweenness, pagerank)</span>
+<span id="cb83-11"><a href="#cb83-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb83-12"><a href="#cb83-12" aria-hidden="true" tabindex="-1"></a>top10 <span class="ot">&lt;-</span> all_cent <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(degree)) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>)</span>
+<span id="cb83-13"><a href="#cb83-13" aria-hidden="true" tabindex="-1"></a>top10</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   id          name        dept    role degree  closeness betweenness
+1   5  Eve Thompson Engineering Manager     20 0.02985984 0.288400956
+2  28   Bella Moore     Finance Manager     20 0.02719201 0.115949951
+3  11   Kate Wilson   Marketing Manager     18 0.02884049 0.160501701
+4  18  Rachel Green       Sales Manager     18 0.02606383 0.046541950
+5  23   Wendy Clark          HR Manager     18 0.02603613 0.278911565
+6   2  Bob Martinez Engineering    Lead     12 0.02704194 0.226828231
+7   7 Grace Okonkwo Engineering  Senior     11 0.01952969 0.005668934
+8  25   Yuki Tanaka     Finance    Lead     11 0.02925373 0.283375850
+9   9 Iris Nakamura   Marketing  Senior     10 0.01954527 0.068664966
+10 14    Nathan Lee       Sales    Lead     10 0.02920143 0.338024376
+     pagerank
+1  0.04219373
+2  0.03937716
+3  0.03894129
+4  0.03930274
+5  0.04049384
+6  0.03100845
+7  0.02454985
+8  0.02689045
+9  0.02448814
+10 0.02545679</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rankings</span></span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>top10 <span class="sc">%&gt;%</span></span>
+<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb85-4"><a href="#cb85-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">deg_r =</span> <span class="fu">rank</span>(<span class="sc">-</span>degree),</span>
+<span id="cb85-5"><a href="#cb85-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">close_r =</span> <span class="fu">rank</span>(<span class="sc">-</span>closeness),</span>
+<span id="cb85-6"><a href="#cb85-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">btw_r =</span> <span class="fu">rank</span>(<span class="sc">-</span>betweenness),</span>
+<span id="cb85-7"><a href="#cb85-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">pr_r =</span> <span class="fu">rank</span>(<span class="sc">-</span>pagerank)</span>
+<span id="cb85-8"><a href="#cb85-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb85-9"><a href="#cb85-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, name, deg_r, close_r, btw_r, pr_r)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   id          name deg_r close_r btw_r pr_r
+1   5  Eve Thompson   1.5       1     2    1
+2  28   Bella Moore   1.5       5     7    3
+3  11   Kate Wilson   4.0       4     6    5
+4  18  Rachel Green   4.0       7     9    4
+5  23   Wendy Clark   4.0       8     4    2
+6   2  Bob Martinez   6.0       6     5    6
+7   7 Grace Okonkwo   7.5      10    10    9
+8  25   Yuki Tanaka   7.5       2     3    7
+9   9 Iris Nakamura   9.5       9     8   10
+10 14    Nathan Lee   9.5       3     1    8</code></pre>
+</div>
+</div>
+<p>Yes, Eve Thompson (ID 5) ranks highly on all metrics. She’s tied-highest on degree (20), has the highest closeness (~0.0299) and highest PageRank (~0.0422) among the top 10 employees by degree, and very high betweenness (~0.288) as well. This pattern shows that Eve is someone who is both broadly connected (degree), centrally positioned in terms of short paths (closeness), frequently sits on key routes between others (betweenness), and is connected to other important nodes (PageRank). Other employees, such as Yuki Tanaka (ID 25) and Nathan Lee (ID 14), have high betweenness (~0.283 and ~0.338, respectively) but only moderate degree centrality (11 and 10, respectively), which suggests that they may not know many other employees but are still central to facilitating communication. There are also employees, such as Wendy Clark (ID 23), who have a high PageRank score (~0.040) but moderate closeness centrality (~0.026), which implies that while they may not be able to spread information fast, they have connections with influential people in the network. On the other hand, Grace Okonkwo (ID 7) ranks within the top 10 by degree (11) but has very low betweenness (~0.0057), which fits the idea of being connected within her immediate team, but is not a main connector between different teams.</p>
+<div style="page-break-after: always;"></div>
+</section>
+</section>
+<section id="question-2.4-community-detection" class="level2">
+<h2 class="anchored" data-anchor-id="question-2.4-community-detection">Question 2.4: Community Detection</h2>
+<section id="gg-spinglass-clustering" class="level3">
+<h3 class="anchored" data-anchor-id="gg-spinglass-clustering">gg) Spinglass clustering</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>comm <span class="ot">&lt;-</span> <span class="fu">cluster_spinglass</span>(lcc)</span>
+<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb87-4"><a href="#cb87-4" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Communities found:"</span>, <span class="fu">length</span>(comm<span class="sc">$</span>csize), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Communities found: 5 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Modularity:"</span>, <span class="fu">round</span>(<span class="fu">modularity</span>(comm), <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Modularity: 0.028 </code></pre>
+</div>
+</div>
+</section>
+<section id="hh-community-sizes" class="level3">
+<h3 class="anchored" data-anchor-id="hh-community-sizes">hh) Community sizes</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>mem <span class="ot">&lt;-</span> <span class="fu">membership</span>(comm)</span>
+<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(mem)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>mem
+ 1  2  3  4  5 
+10 10 12  9  9 </code></pre>
+</div>
+</div>
+</section>
+<section id="ii-visualize-by-community" class="level3">
+<h3 class="anchored" data-anchor-id="ii-visualize-by-community">ii) Visualize by community</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>num_comm <span class="ot">&lt;-</span> <span class="fu">length</span>(<span class="fu">unique</span>(mem))</span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a>comm_colors <span class="ot">&lt;-</span> <span class="fu">brewer.pal</span>(<span class="fu">max</span>(<span class="dv">3</span>, num_comm), <span class="st">"Set2"</span>)</span>
+<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>))</span>
+<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lcc, <span class="at">vertex.label =</span> <span class="cn">NA</span>, <span class="at">vertex.label.cex =</span> <span class="fl">0.5</span>,</span>
+<span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">5</span>, <span class="at">vertex.color =</span> comm_colors[mem],</span>
+<span id="cb93-7"><a href="#cb93-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="fl">0.5</span>, <span class="at">main =</span> <span class="st">"Network (colored by Community)"</span>)</span>
+<span id="cb93-8"><a href="#cb93-8" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="fu">paste</span>(<span class="st">"Comm"</span>, <span class="dv">1</span><span class="sc">:</span>num_comm), <span class="at">fill =</span> comm_colors[<span class="dv">1</span><span class="sc">:</span>num_comm],</span>
+<span id="cb93-9"><a href="#cb93-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">cex =</span> <span class="fl">0.6</span>, <span class="at">bty =</span> <span class="st">"n"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../Assignment1_files/figure-html/q2.4ii-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="jj-community-vs-department" class="level3">
+<h3 class="anchored" data-anchor-id="jj-community-vs-department">jj) Community vs Department</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>comm_dept <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">id =</span> <span class="fu">as.integer</span>(<span class="fu">V</span>(lcc)<span class="sc">$</span>name),</span>
+<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">community =</span> mem,</span>
+<span id="cb94-4"><a href="#cb94-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">department =</span> <span class="fu">V</span>(lcc)<span class="sc">$</span>department</span>
+<span id="cb94-5"><a href="#cb94-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb94-6"><a href="#cb94-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(employees <span class="sc">%&gt;%</span> <span class="fu">select</span>(employee_id, name), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span> <span class="ot">=</span> <span class="st">"employee_id"</span>))</span>
+<span id="cb94-7"><a href="#cb94-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb94-8"><a href="#cb94-8" aria-hidden="true" tabindex="-1"></a>xtab <span class="ot">&lt;-</span> <span class="fu">table</span>(comm_dept<span class="sc">$</span>community, comm_dept<span class="sc">$</span>department)</span>
+<span id="cb94-9"><a href="#cb94-9" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Number of employees:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Number of employees:</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>xtab</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   
+    Engineering Finance HR Marketing Sales
+  1           0       0  0         0    10
+  2           0       0  0        10     0
+  3          12       0  0         0     0
+  4           0       9  0         0     0
+  5           0       0  9         0     0</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Percentages:</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Percentages:</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">prop.table</span>(xtab, <span class="dv">1</span>) <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   
+    Engineering Finance  HR Marketing Sales
+  1           0       0   0         0   100
+  2           0       0   0       100     0
+  3         100       0   0         0     0
+  4           0     100   0         0     0
+  5           0       0 100         0     0</code></pre>
+</div>
+</div>
+<p>Yes, the detected communities align strongly with departments as each community is dominated by one department. For every community, 100 percent of its members come from a single department, with no mixing across departments. This pattern suggests that communication within the organization is highly siloed. However, this community detection is based on who emails whom, thus it is possible that people still work cross-functionally physically but the email data is still primarily department-based.</p>
+</section>
+<section id="kk-business-insights" class="level3">
+<h3 class="anchored" data-anchor-id="kk-business-insights">kk) Business insights</h3>
+<p>Understanding TechConnect’s communication communities provides management with a practical lens for improving coordination and execution. Since communication largely occurs within well-defined groups, management should not assume that information or decisions naturally diffuse across the organization. Instead, communication across teams is likely to depend on deliberate intervention.</p>
+<p>The community structure highlights the importance of individuals who connect different groups. These bridging employees play a disproportionate role in transmitting information across teams, coordinating work, and preventing misalignment. As a result, they represent both a strategic asset and a potential vulnerability if their roles are informal or unsupported.</p>
+<p>Community insights can also inform how TechConnect designs cross-functional initiatives. Because collaboration does not emerge organically at the group level, cross-department projects may require explicit communication structures, such as designated liaisons or joint reporting mechanisms, to function effectively.</p>
+<p>Finally, understanding community boundaries enables more targeted change management. When rolling out organizational changes, policies, or strategic initiatives, management can engage influential members within each community to improve adoption and reduce miscommunication, rather than relying solely on broad, organization-wide announcements.</p>
+<div style="page-break-after: always;"></div>
+</section>
+</section>
+</section>
+<section id="part-3-integration-and-insights" class="level1">
+<h1>Part 3: Integration and Insights</h1>
+<section id="question-3.1-joining-data" class="level2">
+<h2 class="anchored" data-anchor-id="question-3.1-joining-data">Question 3.1: Joining Data</h2>
+<section id="ll-join-employee-data-with-centrality-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="ll-join-employee-data-with-centrality-metrics">ll) Join employee data with centrality metrics</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a>cent_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">employee_id =</span> <span class="fu">as.integer</span>(<span class="fu">V</span>(lcc)<span class="sc">$</span>name),</span>
+<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">degree =</span> <span class="fu">degree</span>(lcc),</span>
+<span id="cb102-4"><a href="#cb102-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">closeness =</span> <span class="fu">closeness</span>(lcc, <span class="at">normalized =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb102-5"><a href="#cb102-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">betweenness =</span> <span class="fu">betweenness</span>(lcc, <span class="at">normalized =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb102-6"><a href="#cb102-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">pagerank =</span> <span class="fu">page_rank</span>(lcc)<span class="sc">$</span>vector</span>
+<span id="cb102-7"><a href="#cb102-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb102-8"><a href="#cb102-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb102-9"><a href="#cb102-9" aria-hidden="true" tabindex="-1"></a>combined <span class="ot">&lt;-</span> employees <span class="sc">%&gt;%</span></span>
+<span id="cb102-10"><a href="#cb102-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(cent_df, <span class="at">by =</span> <span class="st">"employee_id"</span>)</span>
+<span id="cb102-11"><a href="#cb102-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb102-12"><a href="#cb102-12" aria-hidden="true" tabindex="-1"></a>combined <span class="sc">%&gt;%</span></span>
+<span id="cb102-13"><a href="#cb102-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(employee_id, name, department, performance_score,</span>
+<span id="cb102-14"><a href="#cb102-14" aria-hidden="true" tabindex="-1"></a>         degree, closeness, betweenness, pagerank) <span class="sc">%&gt;%</span></span>
+<span id="cb102-15"><a href="#cb102-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 8
+   employee_id name    department performance_score degree closeness betweenness
+         &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;                  &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;
+ 1           1 Alice … Engineeri…               4.5      9    0.0203     0.0286 
+ 2           2 Bob Ma… Engineeri…               4.8     12    0.0270     0.227  
+ 3           3 Charli… Engineeri…               3.8      7    0.0188     0.0799 
+ 4           4 Diana … Engineeri…               4.2      8    0.0198     0.0197 
+ 5           5 Eve Th… Engineeri…               4.6     20    0.0299     0.288  
+ 6           6 Frank … Engineeri…               3.2      4    0.0164     0      
+ 7           7 Grace … Engineeri…               4.4     11    0.0195     0.00567
+ 8           8 Henry … Marketing                4.3      8    0.0230     0.112  
+ 9           9 Iris N… Marketing                3.9     10    0.0195     0.0687 
+10          10 Jack B… Marketing                3.5      6    0.0173     0.0799 
+# ℹ 1 more variable: pagerank &lt;dbl&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="mm-correlation-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="mm-correlation-analysis">mm) Correlation analysis</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Degree vs Performance:"</span>, <span class="fu">round</span>(<span class="fu">cor</span>(combined<span class="sc">$</span>degree, combined<span class="sc">$</span>performance_score), <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Degree vs Performance: 0.691 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Closeness vs Performance:"</span>, <span class="fu">round</span>(<span class="fu">cor</span>(combined<span class="sc">$</span>closeness, combined<span class="sc">$</span>performance_score), <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Closeness vs Performance: 0.702 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Betweenness vs Performance:"</span>, <span class="fu">round</span>(<span class="fu">cor</span>(combined<span class="sc">$</span>betweenness, combined<span class="sc">$</span>performance_score), <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Betweenness vs Performance: 0.477 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"PageRank vs Performance:"</span>, <span class="fu">round</span>(<span class="fu">cor</span>(combined<span class="sc">$</span>pagerank, combined<span class="sc">$</span>performance_score), <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>PageRank vs Performance: 0.745 </code></pre>
+</div>
+</div>
+<p>Network centrality does have a moderate positive relationship with performance since all four centrality scores are correlated positively with performance, from 0.477 (Betweenness vs Performance) to 0.745 (PageRank vs Performance). PageRank has the strongest relationship with performance, so being connected to other important people seems most related to a better performance. Closeness (0.70) and degree (0.69) are also important to doing well, signaling that shorter distances and number of connections are important to performance. Betweenness (0.48) is weaker, which means bridging between groups is less important than the other centrality scores for performance.</p>
+<p>Correlation of degree centrality and performance score is 0.691.</p>
+</section>
+<section id="nn-high-performers-with-low-centrality" class="level3">
+<h3 class="anchored" data-anchor-id="nn-high-performers-with-low-centrality">nn) High performers with low centrality</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb112"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a>med_deg <span class="ot">&lt;-</span> <span class="fu">median</span>(combined<span class="sc">$</span>degree)</span>
+<span id="cb112-2"><a href="#cb112-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Median degree:"</span>, med_deg, <span class="st">"</span><span class="sc">\n\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Median degree: 7 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a>combined <span class="sc">%&gt;%</span></span>
+<span id="cb114-2"><a href="#cb114-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(performance_score <span class="sc">&gt;</span> <span class="fl">4.0</span> <span class="sc">&amp;</span> degree <span class="sc">&lt;</span> med_deg) <span class="sc">%&gt;%</span></span>
+<span id="cb114-3"><a href="#cb114-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(employee_id, name, department, role, performance_score, degree, projects_completed) <span class="sc">%&gt;%</span></span>
+<span id="cb114-4"><a href="#cb114-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(performance_score))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 7
+  employee_id name  department role  performance_score degree projects_completed
+        &lt;int&gt; &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt;             &lt;dbl&gt;  &lt;dbl&gt;              &lt;int&gt;
+1          46 Tara… Finance    Lead                4.3      6                 17</code></pre>
+</div>
+</div>
+<p>While employees like Tara Jenkins (employee ID: 46) do great work, they are flying under the radar network-wise. They may be specialists who do not need to talk to other employees as much, or more introverted. Management should make sure these employees are not overlooked for promotions simply because they are not as visible in the network. Additionally, these employees could be underutilized and could benefit from more collaboration opportunities. They may also need mentorship to expand their network influence and visibility within the organization.</p>
+<div style="page-break-after: always;"></div>
+</section>
+</section>
+<section id="question-3.2-executive-summary" class="level2">
+<h2 class="anchored" data-anchor-id="question-3.2-executive-summary">Question 3.2: Executive Summary</h2>
+<section id="additional-analyses-supporting-the-executive-summary" class="level3">
+<h3 class="anchored" data-anchor-id="additional-analyses-supporting-the-executive-summary">Additional Analyses Supporting the Executive Summary</h3>
+<p>This section summarises supporting analyses referenced in the Executive Summary. It provides compact tables for management interpretation.</p>
+<p><strong>A1. Top performers by combined performance and network position</strong></p>
+<p>The following table highlights employees who rank highly on both performance score and network degree (as a proxy for connectivity).</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 5
+  name         department  role    performance_score degree
+  &lt;chr&gt;        &lt;chr&gt;       &lt;chr&gt;               &lt;dbl&gt;  &lt;dbl&gt;
+1 Bella Moore  Finance     Manager               4.7     20
+2 Eve Thompson Engineering Manager               4.6     20
+3 Bob Martinez Engineering Lead                  4.8     12
+4 Kate Wilson  Marketing   Manager               4.5     18
+5 Wendy Clark  HR          Manager               4.5     18</code></pre>
+</div>
+</div>
+<p><strong>A2. Department summary with performance and network metrics</strong></p>
+<p>This table summarises average performance and network position by department.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 5
+  department      n avg_perf avg_deg avg_btw
+  &lt;chr&gt;       &lt;int&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+1 Engineering    12     4.25    8.92  0.0599
+2 Finance         9     3.96    7.89  0.0580
+3 Sales          10     3.95    8.5   0.0548
+4 Marketing      10     3.86    8     0.0464
+5 HR              9     3.76    7.89  0.0527</code></pre>
+</div>
+</div>
+<p><strong>A3. Performance by experience level</strong></p>
+<p>To examine how performance and coordination responsibilities evolve with tenure, we analyze average performance, project involvement, and network position across experience levels.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 16 × 6
+   years_exp     n avg_perf avg_projects avg_degree avg_pagerank
+       &lt;int&gt; &lt;int&gt;    &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt;        &lt;dbl&gt;
+ 1         1     6     3.13         2.33       4          0.0108
+ 2         2     6     3.47         4          4.83       0.0132
+ 3         3     2     3.75         6.5        5.5        0.0131
+ 4         4     2     3.55         6.5        7.5        0.0145
+ 5         5     4     3.85         8.5        7.75       0.0178
+ 6         6     5     3.96        11.4        8.6        0.0201
+ 7         7     4     4.03        11.5        7.5        0.0164
+ 8         8     5     4.2         14.6        8          0.0215
+ 9         9     4     4.28        16.5        7.75       0.0205
+10        10     3     4.43        18.7        8.67       0.0244
+11        11     2     4.6         20.5        9.5        0.0231
+12        12     2     4.65        21         15          0.0358
+13        13     1     4.4         25         18          0.0393
+14        14     2     4.6         25         19          0.0392
+15        15     1     4.6         28         20          0.0422
+16        16     1     4.9         30          9          0.0237</code></pre>
+</div>
+</div>
+<p><strong>A4. Performance by project load</strong></p>
+<p>Employees are grouped into low, medium, and high project load bands to assess how workload relates to performance and communication roles.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 5
+  project_band     n avg_perf avg_degree avg_betweenness
+  &lt;chr&gt;        &lt;int&gt;    &lt;dbl&gt;      &lt;dbl&gt;           &lt;dbl&gt;
+1 High load       14     4.53      12.4           0.137 
+2 Medium load     22     4.02       7.86          0.0204
+3 Low load        14     3.34       4.86          0.0258</code></pre>
+</div>
+</div>
+<p><strong>A5. Key communication hubs</strong></p>
+<p>The following table lists employees with the highest betweenness centrality, highlighting individuals who play critical bridging roles in internal communication.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 8
+  name  department role  betweenness degree pagerank closeness performance_score
+  &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;             &lt;dbl&gt;
+1 Nath… Sales      Lead        0.338     10   0.0255    0.0292               4.7
+2 Eve … Engineeri… Mana…       0.288     20   0.0422    0.0299               4.6
+3 Yuki… Finance    Lead        0.283     11   0.0269    0.0293               4.6
+4 Wend… HR         Mana…       0.279     18   0.0405    0.0260               4.5
+5 Bob … Engineeri… Lead        0.227     12   0.0310    0.0270               4.8</code></pre>
+</div>
+</div>
+</section>
+<section id="executive-summary-for-techconnect-management" class="level3">
+<h3 class="anchored" data-anchor-id="executive-summary-for-techconnect-management">Executive Summary for TechConnect Management</h3>
+<p><strong>Overview</strong></p>
+<p>We analyzed TechConnect’s employees and email communication data to assess performance and information flow. While overall performance is strong, communication and workload are concentrated within departments and among a small group of highly connected employees, creating coordination and resilience risks as the organization scales.</p>
+<p><strong>Performance Findings</strong></p>
+<p>TechConnect’s average performance score is 3.97 out of 5, with 612 projects completed, indicating strong organization-wide performance. We identified 23 standout performers (performance &gt; 4.0 with 10+ projects each). Performance varies across departments, with Engineering leading (average ~4.25), while Marketing (~3.86) and HR (~3.76) lag, indicating scope for targeted capability development in latter teams.</p>
+<p>Employee performance increases steadily with experience and stabilizes after approximately 7–8 years. Experienced employees take on more projects and exhibit higher network centrality, indicating expertise, influence, and coordination responsibilities accumulate with tenure. However, at senior levels, project load and communication demands continue to rise while performance gains plateau, suggesting diminishing returns and potential coordination overload. Performance is also strongly associated with project involvement: employees handling higher project loads consistently outperform their peers.</p>
+<p><strong>Network Structure</strong></p>
+<p>The email network is largely connected through one dominant component, enabling organization-wide information flow. However, community detection shows communication remains strongly clustered by department. This reflects strong within-department coordination but limited cross-functional exchange, creating functional silos that may slow decision-making and increase friction in multi-department initiatives.</p>
+<p><strong>Key Employees</strong></p>
+<p>Nathan has the highest betweenness, making him a critical bridge in the network. Eve ranks highly across multiple centrality metrics, emerging as the most important overall hub with broad reach, while Yuki and Wendy also serve as key connectors. Overreliance on them creates vulnerability, as overload or exit would disrupt company-wide information flow.</p>
+<p><strong>Recommendations</strong></p>
+<ol type="1">
+<li><p>To address siloed communication patterns, TechConnect should define shared OKRs and institutionalize regular cross-functional forums (e.g., monthly syncs) to ensure organization moves toward a common vision and prevent small disconnects from becoming bottlenecks.</p></li>
+<li><p>Employees with high betweenness centrality (e.g.&nbsp;Eve, Nathan) should be formally deployed as cross-functional coordinators, with clear role definitions and resourcing. To avoid coordination overload as tenure increases, senior employees should focus on high-impact decision-making and mentoring, supported by delegation structures, while mid-tenure staff take on greater project ownership to build capacity.</p></li>
+<li><p>Not all top contributors are highly networked. Employees like Tara Jenkins may deliver strong performance but remain under-recognized. Proactively acknowledging their contributions and involving them in strategic initiatives reinforces engagement and supports talent retention.</p></li>
+</ol>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
