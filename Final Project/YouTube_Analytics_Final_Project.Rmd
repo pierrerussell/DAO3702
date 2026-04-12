@@ -1,7 +1,7 @@
 ---
 title: "What Makes a YouTube Video Go Viral? A Global Analysis"
-subtitle: "DBA3702 Applied Analytics with R - Final Project"
-author: "Group X"
+subtitle: "DBA3702: Descriptive Analytics with R - Final Project"
+author: "weRready"
 date: "`r Sys.Date()`"
 output:
   html_document:
@@ -33,7 +33,7 @@ knitr::opts_chunk$set(
 )
 ```
 
----
+------------------------------------------------------------------------
 
 # Executive Summary
 
@@ -41,20 +41,20 @@ This project analyzes YouTube trending video data from **10 countries** (US, GB,
 
 **Key Findings:**
 
-1. **Regional Differences Matter**: Engagement patterns vary significantly across countries - India shows highest engagement rates while Japan has the most selective trending criteria
-2. **Title Strategies Work Globally**: "How-to" and curiosity-gap titles outperform generic titles across all markets
-3. **Category Preferences Differ**: Music dominates in Latin America; Entertainment leads in English-speaking countries; Gaming is strong in Korea and Japan
-4. **Universal Success Factors**: High like ratios and quick time-to-trend are consistent predictors across all markets
-5. **Optimal Title Length**: 40-60 characters perform best universally
+1.  **Regional Differences Matter**: Engagement patterns vary significantly across countries - India shows highest engagement rates while Japan has the most selective trending criteria
+2.  **Title Strategies Work Globally**: "How-to" and curiosity-gap titles outperform generic titles across all markets
+3.  **Category Preferences Differ**: Music dominates in Latin America; Entertainment leads in English-speaking countries; Gaming is strong in Korea and Japan
+4.  **Universal Success Factors**: High like ratios and quick time-to-trend are consistent predictors across all markets
+5.  **Optimal Title Length**: 40-60 characters perform best universally
 
 **Recommendations for Global YouTubers:**
 
-- Tailor content strategy to target market characteristics
-- Use curiosity-inducing titles with clear value propositions
-- Focus on engagement metrics (likes, comments) over pure views
-- Consider regional timing and cultural preferences
+-   Tailor content strategy to target market characteristics
+-   Use curiosity-inducing titles with clear value propositions
+-   Focus on engagement metrics (likes, comments) over pure views
+-   Consider regional timing and cultural preferences
 
----
+------------------------------------------------------------------------
 
 # 1. Introduction and Problem Statement
 
@@ -66,25 +66,33 @@ This analysis examines the **YouTube Trending Videos Dataset** from Kaggle, cont
 
 ## 1.2 Research Questions
 
-1. How do video engagement patterns differ across countries?
-2. Which title patterns and formats generate the highest engagement globally?
-3. Are there significant differences in category preferences across regions?
-4. What latent factors underlie video performance, and do they vary by country?
-5. Can we model the relationship between video attributes and engagement across markets?
+1.  How do video engagement patterns differ across countries?
+2.  Which title patterns and formats generate the highest engagement globally?
+3.  Are there significant differences in category preferences across regions?
+4.  What latent factors underlie video performance, and do they vary by country?
+5.  Can we model the relationship between video attributes and engagement across markets?
 
 ## 1.3 Dataset Overview
 
 ```{r load-packages}
-# Load required packages
-library(tidyverse)
 library(jsonlite)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(ggplot2)
+library(scales)
+library(stats)
+library(psych)
+library(tidyverse)
 library(lubridate)
 library(scales)
 library(corrplot)
 library(ggcorrplot)
-library(knitr)
 library(kableExtra)
 library(broom)
+library(ggridges)
+
+set.seed(42)
 ```
 
 ```{r load-all-data}
@@ -138,7 +146,7 @@ kable(country_counts,
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
----
+------------------------------------------------------------------------
 
 # 2. Data Wrangling
 
@@ -267,7 +275,7 @@ kable(country_summary,
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
----
+------------------------------------------------------------------------
 
 # 3. Descriptive Analytics and Visualization
 
@@ -275,228 +283,211 @@ kable(country_summary,
 
 ```{r global-stats}
 # Overall summary statistics
-global_stats <- youtube_clean %>%
-  summarise(
-    Total_Videos = n(),
-    Total_Countries = n_distinct(country_code),
-    Total_Channels = n_distinct(channel_title),
-    Mean_Views = mean(views),
-    Median_Views = median(views),
-    Mean_Engagement = mean(engagement_rate, na.rm = TRUE),
-    Mean_Like_Ratio = mean(like_ratio, na.rm = TRUE)
-  )
+global_summary <- youtube_clean %>%
+  summarise(across(
+    where(is.numeric) & !all_of(c("like_ratio")),
+    list(
+      mean   = ~round(mean(., na.rm = TRUE), 2),
+      median = ~round(median(., na.rm = TRUE), 2),
+      sd     = ~round(sd(., na.rm = TRUE), 2),
+      iqr    = ~round(IQR(., na.rm = TRUE), 2),
+      cv     = ~round(sd(., na.rm = TRUE) / mean(., na.rm = TRUE), 4)
+    ),
+    .names = "{.col}__{.fn}"
+  )) %>%
+  pivot_longer(
+    cols      = everything(),
+    names_to  = c("variable", "stat"),
+    names_sep = "__"
+  ) %>%
+  pivot_wider(names_from = stat, values_from = value)
 
-cat("Global Dataset Summary:\n")
-cat("- Total unique videos:", comma(global_stats$Total_Videos), "\n")
-cat("- Unique channels:", comma(global_stats$Total_Channels), "\n")
-cat("- Mean views:", comma(round(global_stats$Mean_Views)), "\n")
-cat("- Median views:", comma(global_stats$Median_Views), "\n")
-cat("- Mean engagement rate:", round(global_stats$Mean_Engagement, 2), "%\n")
-cat("- Mean like ratio:", round(global_stats$Mean_Like_Ratio, 1), "%\n")
+cat("\nGlobal Summary Statistics:\n")
+print(global_summary, n = Inf)
 ```
 
-## 3.2 Country Comparison: Engagement Metrics
+## 3.2 View Count (Log Scale) by Country
 
-```{r country-engagement-comparison, fig.height=5}
-# Engagement by country
-engagement_by_country <- youtube_clean %>%
-  group_by(country_code, country, region) %>%
-  summarise(
-    avg_engagement = mean(engagement_rate, na.rm = TRUE),
-    avg_like_ratio = mean(like_ratio, na.rm = TRUE),
-    avg_views = mean(views),
-    n = n(),
-    .groups = "drop"
-  )
-
-ggplot(engagement_by_country,
-       aes(x = reorder(country, avg_engagement), y = avg_engagement, fill = region)) +
-  geom_col() +
-  geom_text(aes(label = round(avg_engagement, 1)), hjust = -0.1, size = 3) +
-  coord_flip() +
-  scale_fill_brewer(palette = "Set2", name = "Region") +
+```{r country-view-comparison, fig.height=7}
+p_summary <- ggplot(youtube_clean, aes(x = log(views), fill = country)) +
+  geom_histogram(bins = 60, colour = "white", alpha = 0.85) +
+  scale_x_continuous(labels = comma) +
+  scale_fill_viridis_d(option = "C") +
+  facet_wrap(~ country) +
   labs(
-    title = "Average Engagement Rate by Country",
-    subtitle = "Engagement = (Likes + Dislikes + Comments) / Views",
-    x = NULL,
-    y = "Engagement Rate (%)"
+    title    = "Distribution of Trending Video Views by Country (Log Scale)",
+    x        = "Views",
+    y        = "Count"
   ) +
-  theme_minimal(base_size = 11) +
-  theme(plot.title = element_text(face = "bold")) +
-  expand_limits(y = max(engagement_by_country$avg_engagement) * 1.15)
-```
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1))
 
-```{r country-like-ratio, fig.height=5}
-# Like ratio by country
-ggplot(engagement_by_country,
-       aes(x = reorder(country, avg_like_ratio), y = avg_like_ratio, fill = region)) +
-  geom_col() +
-  geom_hline(yintercept = mean(youtube_clean$like_ratio, na.rm = TRUE),
-             linetype = "dashed", color = "red") +
-  coord_flip() +
-  scale_fill_brewer(palette = "Set2", name = "Region") +
-  labs(
-    title = "Average Like Ratio by Country",
-    subtitle = "Red line = global average; Higher = more positive reception",
-    x = NULL,
-    y = "Like Ratio (%)"
-  ) +
-  theme_minimal(base_size = 11) +
-  theme(plot.title = element_text(face = "bold"))
+print(p_summary)
 ```
 
 ## 3.3 Category Distribution by Country
 
-```{r category-by-country, fig.height=7}
-# Top categories by country
-top_categories <- youtube_clean %>%
-  count(country_code, category_name) %>%
-  group_by(country_code) %>%
-  mutate(pct = n / sum(n) * 100) %>%
-  slice_max(pct, n = 5) %>%
-  ungroup()
-
-# Heatmap of category distribution
-category_heatmap <- youtube_clean %>%
-  count(country_code, category_name) %>%
-  group_by(country_code) %>%
-  mutate(pct = n / sum(n) * 100) %>%
+```{r country-engagement-comparison, fig.height=7}
+p_cat <- youtube_clean %>%
+  group_by(country, category_name) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(country) %>%
+  mutate(pct = n / sum(n)) %>%
   ungroup() %>%
-  filter(category_name %in% c("Entertainment", "Music", "Gaming", "Sports",
-                               "Comedy", "People & Blogs", "News & Politics",
-                               "Film & Animation", "Science & Technology", "Education"))
-
-ggplot(category_heatmap, aes(x = country_code, y = category_name, fill = pct)) +
-  geom_tile(color = "white") +
-  geom_text(aes(label = round(pct, 0)), size = 2.5) +
-  scale_fill_gradient(low = "#fff5eb", high = "#d94801", name = "% of\nTrending") +
+  mutate(category_name = reorder(category_name, pct, sum)) %>%
+  ggplot(aes(x = pct, y = category_name, fill = country)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ country, scales = "free_x", ncol = 5) +
+  scale_x_continuous(labels = percent_format(accuracy = 1)) +
   labs(
-    title = "Category Distribution Across Countries",
-    subtitle = "Percentage of trending videos by category in each country",
-    x = "Country",
-    y = NULL
-  ) +
-  theme_minimal(base_size = 10) +
-  theme(
-    plot.title = element_text(face = "bold"),
-    axis.text.x = element_text(angle = 0),
-    panel.grid = element_blank()
-  )
-```
-
-## 3.4 Views Distribution by Region
-
-```{r views-by-region, fig.height=5}
-# Box plot of log views by region
-ggplot(youtube_clean, aes(x = region, y = log10(views), fill = region)) +
-  geom_boxplot(alpha = 0.7, outlier.size = 0.5) +
-  scale_fill_brewer(palette = "Set2") +
-  labs(
-    title = "Distribution of Views by Region (Log Scale)",
-    x = NULL,
-    y = "Log10(Views)"
+    title    = "Category Distribution by Country",
+    subtitle = "Share of trending videos per category within each country",
+    x        = "% of Trending Videos",
+    y        = NULL
   ) +
   theme_minimal(base_size = 11) +
-  theme(
-    plot.title = element_text(face = "bold"),
-    legend.position = "none"
-  )
+  theme(axis.text.y = element_text(size = 7),
+        strip.text  = element_text(face = "bold"))
+
+print(p_cat)
 ```
 
-## 3.5 Title Pattern Performance Across Countries
+## 3.4 Engagement Rate by Country
+
+```{r country-like-ratio, fig.height=5}
+p_eng <- youtube_clean %>%
+  filter(!is.na(engagement_rate), engagement_rate < 0.5) %>%
+  ggplot(aes(x = reorder(country, engagement_rate, median),
+             y = engagement_rate,
+             fill = country)) +
+  geom_boxplot(outlier.size = 0.4, outlier.alpha = 0.3, show.legend = FALSE) +
+  scale_fill_viridis_d(option = "C") +
+  scale_y_continuous(labels = percent_format(accuracy = 0.1)) +
+  coord_flip() +
+  labs(
+    title    = "Engagement Rate by Country",
+    subtitle = "Engagement rate = (likes + dislikes + comments) / views",
+    x        = NULL,
+    y        = "Engagement Rate"
+  ) +
+  theme_minimal(base_size = 13)
+
+print(p_eng)
+```
+
+## 3.5 Title Pattern Performance by Country
 
 ```{r title-pattern-by-country, fig.height=6}
-# Title pattern performance by country
-title_country_perf <- youtube_clean %>%
-  group_by(country_code, title_pattern) %>%
+title_stats <- youtube_clean %>%
+  group_by(country, title_pattern) %>%
   summarise(
-    avg_engagement = mean(engagement_rate, na.rm = TRUE),
-    n = n(),
-    .groups = "drop"
-  ) %>%
-  filter(n >= 20)  # Minimum sample size
+    median_views      = median(views, na.rm = TRUE),
+    median_engagement = median(engagement_rate, na.rm = TRUE),
+    n                 = n(),
+    .groups           = "drop"
+  )
 
-# Global title pattern performance
-global_title_perf <- youtube_clean %>%
-  group_by(title_pattern) %>%
-  summarise(
-    avg_engagement = mean(engagement_rate, na.rm = TRUE),
-    avg_like_ratio = mean(like_ratio, na.rm = TRUE),
-    avg_views = mean(views),
-    n = n(),
-    .groups = "drop"
-  ) %>%
-  filter(n >= 100) %>%
-  arrange(desc(avg_engagement))
-
-ggplot(global_title_perf,
-       aes(x = reorder(title_pattern, avg_engagement), y = avg_engagement,
-           fill = avg_like_ratio)) +
-  geom_col() +
-  geom_text(aes(label = paste0("n=", comma(n))), hjust = -0.1, size = 2.5) +
-  coord_flip() +
-  scale_fill_gradient2(low = "#e74c3c", mid = "#f39c12", high = "#27ae60",
-                       midpoint = 92, name = "Like\nRatio %") +
+# Heatmap: median views by title pattern × country
+p_title <- title_stats %>%
+  ggplot(aes(x = country,
+             y = reorder(title_pattern, median_views, median),
+             fill = median_views)) +
+  geom_tile(colour = "black", linewidth = 0.4) +
+  geom_text(aes(label = comma(round(median_views / 1e6, 1), suffix = "M")),
+            size = 3.5, fontface = "bold", colour = "black") +
+  scale_fill_gradient(low = "honeydew", high = "firebrick",
+                      labels = comma, name = "Median Views") +
   labs(
-    title = "Global Title Pattern Performance",
-    subtitle = "Average engagement rate by title pattern (min 100 videos)",
-    x = NULL,
-    y = "Average Engagement Rate (%)"
+    title    = "Title Pattern Performance by Country",
+    subtitle = "Red = higher median view count",
+    x        = NULL,
+    y        = NULL
   ) +
-  theme_minimal(base_size = 11) +
-  theme(plot.title = element_text(face = "bold")) +
-  expand_limits(y = max(global_title_perf$avg_engagement) * 1.2)
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "right")
+
+print(p_title)
 ```
 
 ## 3.6 Days to Trend by Country
 
 ```{r days-to-trend, fig.height=5}
-# Days to trend by country
-days_summary <- youtube_clean %>%
-  group_by(country_code, country) %>%
-  summarise(
-    median_days = median(days_to_trend),
-    mean_days = mean(days_to_trend),
-    .groups = "drop"
-  ) %>%
-  arrange(median_days)
-
-ggplot(days_summary, aes(x = reorder(country, median_days), y = median_days)) +
-  geom_col(fill = "#3498db", alpha = 0.8) +
-  geom_text(aes(label = round(median_days, 1)), hjust = -0.1, size = 3) +
-  coord_flip() +
-  labs(
-    title = "How Quickly Do Videos Trend?",
-    subtitle = "Median days from publish to trending by country",
-    x = NULL,
-    y = "Median Days to Trend"
+p_days <- youtube_clean %>%
+  filter(days_to_trend <= 30) %>%           # focus on typical range
+  ggplot(aes(x     = days_to_trend,
+             y     = reorder(country, days_to_trend, median),
+             fill  = after_stat(x))) +
+  geom_density_ridges_gradient(
+    scale          = 2,
+    rel_min_height = 0.01,
+    bandwidth      = 1
   ) +
-  theme_minimal(base_size = 11) +
-  theme(plot.title = element_text(face = "bold")) +
-  expand_limits(y = max(days_summary$median_days) * 1.15)
+  scale_fill_viridis_c(option = "C", name = "Days") +
+  scale_x_continuous(breaks = c(0, 5, 10, 15, 20, 30)) +
+  labs(
+    title    = "Days from Publish to Trending by Country",
+    subtitle = "Distributions trimmed to ≤ 30 days; countries ordered by median",
+    x        = "Days to Trend",
+    y        = NULL
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+
+print(p_days)
 ```
 
 ## 3.7 Correlation Analysis
 
 ```{r correlation-global, fig.height=6}
-# Global correlation matrix
-cor_vars <- youtube_clean %>%
-  select(views, likes, dislikes, comment_count, like_ratio,
-         engagement_rate, days_to_trend, title_length, tag_count) %>%
-  drop_na()
+cor_vars <- c("views", "likes", "dislikes", "comment_count",
+              "engagement_rate", "days_to_trend",
+              "title_length", "tag_count", "publish_hour")
 
-cor_matrix <- cor(cor_vars, use = "complete.obs")
+cor_matrix <- youtube_clean %>%
+  select(all_of(cor_vars)) %>%
+  drop_na() %>%
+  cor(method = "pearson")
 
-ggcorrplot(cor_matrix,
-           type = "lower",
-           lab = TRUE,
-           lab_size = 2.5,
-           colors = c("#e74c3c", "white", "#27ae60"),
-           title = "Global Correlation Matrix of Video Metrics",
-           ggtheme = theme_minimal(base_size = 10))
+cat("\nCorrelation matrix:\n")
+print(round(cor_matrix, 3))
+
+# Heatmap of correlation matrix
+cor_long <- as.data.frame(cor_matrix) %>%
+  rownames_to_column("var1") %>%
+  pivot_longer(-var1, names_to = "var2", values_to = "correlation") %>%
+  mutate(
+    var1 = factor(var1, levels = cor_vars),
+    var2 = factor(var2, levels = cor_vars)
+  ) %>%
+  filter(as.integer(var1) >= as.integer(var2))
+
+p_cor <- ggplot(cor_long, aes(x = var1, y = var2, fill = correlation)) +
+  geom_tile(colour = "black") +
+  geom_text(aes(label = round(correlation, 2)),
+            size = 3, colour = "black") +
+  scale_fill_gradient2(
+    low      = "firebrick",
+    mid      = "white",
+    high     = "dodgerblue",
+    midpoint = 0,
+    limits   = c(-1, 1),
+    name     = "Pearson r"
+  ) +
+  labs(
+    title    = "Correlation Matrix — Key Numeric Variables",
+    subtitle = "Red = negative, Blue = positive correlation, White = no correlation",
+    x        = NULL,
+    y        = NULL
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+print(p_cor)
 ```
 
----
+------------------------------------------------------------------------
 
 # 4. Statistical Inference
 
@@ -506,8 +497,8 @@ ggcorrplot(cor_matrix,
 
 **Hypotheses**:
 
-- H0 (Null): Mean engagement rates are equal across all countries
-- H1 (Alternative): At least one country has a different mean engagement rate
+-   H0 (Null): Mean engagement rates are equal across all countries
+-   H1 (Alternative): At least one country has a different mean engagement rate
 
 ```{r anova-countries}
 # ANOVA for engagement across countries
@@ -619,7 +610,7 @@ kable(contingency, caption = "Category Counts by Region") %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
----
+------------------------------------------------------------------------
 
 # 5. Dimensionality Reduction
 
@@ -717,9 +708,9 @@ ggplot(loadings_long, aes(x = Component, y = Variable, fill = Loading)) +
 
 **Component Interpretation**:
 
-- **PC1 (Popularity)**: High loadings on views, likes, comments - overall video scale
-- **PC2 (Engagement Quality)**: Engagement rate and like ratio - audience reception
-- **PC3 (Metadata)**: Title characteristics and tag count
+-   **PC1 (Popularity)**: High loadings on views, likes, comments - overall video scale
+-   **PC2 (Engagement Quality)**: Engagement rate and like ratio - audience reception
+-   **PC3 (Metadata)**: Title characteristics and tag count
 
 ## 5.5 PCA by Country
 
@@ -755,7 +746,7 @@ ggplot() +
   theme(plot.title = element_text(face = "bold"))
 ```
 
----
+------------------------------------------------------------------------
 
 # 6. Regression Modeling
 
@@ -848,7 +839,7 @@ plot(model_global, which = 1:4, cex = 0.5)
 par(mfrow = c(1, 1))
 ```
 
----
+------------------------------------------------------------------------
 
 # 7. Conclusion and Recommendations
 
@@ -875,14 +866,14 @@ kable(findings, caption = "Summary of Key Findings") %>%
 
 ### For Global YouTubers
 
-1. **Title Optimization**: Use "How-To" or "Listicle" formats - they work across all markets
-2. **Focus on Engagement**: Like ratio predicts success better than raw views
-3. **Quick Trending**: Aim to trend within 2-3 days of publishing
+1.  **Title Optimization**: Use "How-To" or "Listicle" formats - they work across all markets
+2.  **Focus on Engagement**: Like ratio predicts success better than raw views
+3.  **Quick Trending**: Aim to trend within 2-3 days of publishing
 
 ### Market-Specific Strategies
 
 | Market | Key Insight | Strategy |
-|--------|-------------|----------|
+|-------------------|------------------------------|-----------------------|
 | **US/GB/CA** | Entertainment dominates | Focus on entertainment/comedy content |
 | **India** | Highest engagement rates | Emphasize interaction; respond to comments |
 | **Japan** | Most selective trending | Quality over quantity; niche content works |
@@ -894,30 +885,30 @@ kable(findings, caption = "Summary of Key Findings") %>%
 
 Based on our global analysis:
 
-1. **"Why Your X is Y"** - Drives curiosity across cultures
-2. **"5 Ways to..."** - Listicles perform consistently well
-3. **"How to..."** - Educational content has highest engagement
-4. **Keep titles 40-60 characters** - Works across all markets
-5. **Use numbers** - Increases click-through in all regions
+1.  **"Why Your X is Y"** - Drives curiosity across cultures
+2.  **"5 Ways to..."** - Listicles perform consistently well
+3.  **"How to..."** - Educational content has highest engagement
+4.  **Keep titles 40-60 characters** - Works across all markets
+5.  **Use numbers** - Increases click-through in all regions
 
 ## 7.3 Limitations
 
-- Dataset captures only videos that trended, not failed videos
-- Historical data (2017-2018) may not reflect current algorithm
-- Cannot establish causality, only correlation
-- Language/cultural nuances in titles not fully captured
+-   Dataset captures only videos that trended, not failed videos
+-   Historical data (2017-2018) may not reflect current algorithm
+-   Cannot establish causality, only correlation
+-   Language/cultural nuances in titles not fully captured
 
 ## 7.4 Technical Summary
 
 | Area | Techniques Applied |
-|------|-------------------|
+|-------------------------|-----------------------------------------------|
 | Data Wrangling | dplyr (filter, select, mutate, summarize, group_by), tidyr (pivot_longer), joins across 10 country datasets |
 | Descriptive Analytics | Summary statistics by country/region, ggplot2 visualizations (bar charts, heatmaps, boxplots) |
 | Statistical Inference | ANOVA, Tukey HSD post-hoc, t-tests, chi-square, confidence intervals |
 | Dimensionality Reduction | PCA with prcomp(), scree plots, Kaiser rule, country-level analysis |
 | Regression Modeling | Multiple lm() models with country fixed effects, interactions, coefficient interpretation |
 
----
+------------------------------------------------------------------------
 
 # Appendix
 
@@ -925,6 +916,6 @@ Based on our global analysis:
 sessionInfo()
 ```
 
----
+------------------------------------------------------------------------
 
 *Report generated on `r Sys.Date()` using R version `r R.version.string`*
