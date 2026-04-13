@@ -532,63 +532,7 @@ kable(tukey_df, digits = 4,
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
-## 4.3 T-Test: Regional Comparison (Asia vs Europe)
-
-```{r ttest-regions}
-# Compare Asia vs Europe
-asia_engagement <- youtube_clean %>%
-  filter(region == "Asia") %>%
-  pull(engagement_rate)
-
-europe_engagement <- youtube_clean %>%
-  filter(region == "Europe") %>%
-  pull(engagement_rate)
-
-t_result <- t.test(asia_engagement, europe_engagement)
-
-cat("T-Test: Asia vs Europe Engagement Rates\n")
-cat("========================================\n")
-cat("Asia Mean:", round(mean(asia_engagement, na.rm = TRUE), 3), "%\n")
-cat("Europe Mean:", round(mean(europe_engagement, na.rm = TRUE), 3), "%\n")
-cat("Difference:", round(mean(asia_engagement, na.rm = TRUE) -
-                          mean(europe_engagement, na.rm = TRUE), 3), "%\n")
-cat("T-statistic:", round(t_result$statistic, 3), "\n")
-cat("P-value:", format.pval(t_result$p.value, digits = 4), "\n")
-cat("95% CI: [", round(t_result$conf.int[1], 3), ",",
-    round(t_result$conf.int[2], 3), "]\n")
-```
-
-## 4.4 Confidence Intervals by Country
-
-```{r ci-by-country, fig.height=5}
-# 95% CI for engagement by country
-ci_country <- youtube_clean %>%
-  group_by(country_code, country) %>%
-  summarise(
-    n = n(),
-    mean_eng = mean(engagement_rate, na.rm = TRUE),
-    se = sd(engagement_rate, na.rm = TRUE) / sqrt(n()),
-    ci_lower = mean_eng - 1.96 * se,
-    ci_upper = mean_eng + 1.96 * se,
-    .groups = "drop"
-  )
-
-ggplot(ci_country, aes(x = mean_eng, y = reorder(country, mean_eng))) +
-  geom_point(size = 3, color = "#3498db") +
-  geom_errorbarh(aes(xmin = ci_lower, xmax = ci_upper), height = 0.3, color = "#3498db") +
-  geom_vline(xintercept = mean(youtube_clean$engagement_rate, na.rm = TRUE),
-             linetype = "dashed", color = "#e74c3c") +
-  labs(
-    title = "95% Confidence Intervals for Engagement Rate",
-    subtitle = "Dashed line = global mean engagement",
-    x = "Engagement Rate (%)",
-    y = NULL
-  ) +
-  theme_minimal(base_size = 11) +
-  theme(plot.title = element_text(face = "bold"))
-```
-
-## 4.5 Chi-Square: Category Preferences by Region
+## 4.3 Chi-Square: Category Preferences by Region
 
 ```{r chi-square-category}
 # Chi-square test for category distribution across regions
@@ -609,6 +553,32 @@ cat("P-value:", format.pval(chi_result$p.value, digits = 4), "\n")
 kable(contingency, caption = "Category Counts by Region") %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
+
+```{r chi-square-visualization, fig.height=5}
+# Visualize category distribution by region (stacked bar chart)
+top_cats %>%
+  count(region, category_name) %>%
+  group_by(region) %>%
+  mutate(pct = n / sum(n)) %>%
+  ungroup() %>%
+  ggplot(aes(x = region, y = pct, fill = category_name)) +
+  geom_col(position = "stack", color = "white", linewidth = 0.3) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  scale_fill_brewer(palette = "Set2", name = "Category") +
+  labs(
+    title = "Category Distribution by Region",
+    subtitle = "Chi-square test confirms significant differences in category preferences across regions",
+    x = NULL,
+    y = "Proportion of Trending Videos"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    legend.position = "right"
+  )
+```
+
+**Interpretation**: The chi-square test (p < 0.001) confirms that category preferences differ significantly across regions. The stacked bar chart visualizes these differences — Music dominates in Latin America, while Entertainment has a stronger presence in North America and Europe. Gaming shows relatively consistent popularity across all regions.
 
 ------------------------------------------------------------------------
 
