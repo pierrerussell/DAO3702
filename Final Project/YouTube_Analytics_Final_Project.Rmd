@@ -594,6 +594,11 @@ pca_data <- youtube_clean %>%
          title_length, title_words, tag_count) %>%
   drop_na()
 
+pca_vars <- c("log_views", "log_likes", "log_comments",
+              "like_ratio", "dislike_ratio", "comment_ratio",
+              "days_to_trend", "publish_hour", "engagement_rate")
+
+
 # Standardize
 pca_scaled <- scale(pca_data)
 
@@ -720,100 +725,336 @@ ggplot() +
 
 # 6. Regression Modeling
 
-## 6.1 Model 1: Global Engagement Predictors
-
-```{r regression-global}
-# Prepare data
-model_data <- youtube_clean %>%
-  select(engagement_rate, views, like_ratio, days_to_trend,
-         title_length, has_number, has_question,
-         category_name, country_code, region, title_pattern) %>%
-  drop_na() %>%
-  mutate(log_views = log10(views + 1))
-
-# Global model
-model_global <- lm(engagement_rate ~ log_views + like_ratio + days_to_trend +
-                     title_length + has_number + has_question + region,
-                   data = model_data)
-
-summary(model_global)
+## 6.1 Preparation for Regression
+```{r prep-data}
+reg_df <- df %>%
+  mutate(
+    category    = relevel(factor(category), ref = "Entertainment"),
+    publish_dow = relevel(factor(publish_dow), ref = "Monday"),
+    region      = factor(region)
+  ) %>%
+  filter(
+    is.finite(log_views),
+    is.finite(like_ratio),
+    is.finite(log_comments),
+    is.finite(days_to_trend),
+    !is.na(publish_hour)
+  )
 ```
 
-## 6.2 Model 2: Country-Specific Effects
+## 6.2 Model 1: Base Model (Global Continuous Predictors Only)
 
-```{r regression-country}
-# Model with country fixed effects
-model_country <- lm(engagement_rate ~ log_views + like_ratio + days_to_trend +
-                      title_length + has_number + country_code,
-                    data = model_data)
+```{r model1}
+m1 <- lm(log_views ~ log_likes + log_comments + days_to_trend + publish_hour,
+         data = reg_df)
 
-cat("\nModel with Country Fixed Effects\n")
-cat("=================================\n")
-cat("R-squared:", round(summary(model_country)$r.squared, 4), "\n")
-cat("Adj. R-squared:", round(summary(model_country)$adj.r.squared, 4), "\n")
-
-# Compare models
-cat("\nModel Comparison (R-squared):\n")
-cat("- Global (region only):", round(summary(model_global)$r.squared, 4), "\n")
-cat("- Country fixed effects:", round(summary(model_country)$r.squared, 4), "\n")
+summary(m1)
 ```
 
-## 6.3 Model Coefficients Visualization
+ The first model analyses views and its relationship with log likes, log comments, days to trend and publish hour. The **positive relationships** are likes and comments which is expected. However, **days to trend** is also positive which means videos that take longer to trend perform better, which is unexpected according to previous findings.
 
-```{r model-coefs, fig.height=5}
-# Extract significant coefficients
-coef_df <- tidy(model_global, conf.int = TRUE) %>%
-  filter(p.value < 0.05, term != "(Intercept)") %>%
-  arrange(desc(abs(estimate))) %>%
-  slice_head(n = 12)
+There is also a **weak negative relationship** for publishing hour, which indicates videos uploaded later tend to perform worse.
 
-ggplot(coef_df, aes(x = reorder(term, estimate), y = estimate)) +
-  geom_col(aes(fill = estimate > 0), show.legend = FALSE) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+For model interpretation, the p value is less than 0.05 which means it is **statistically significant**. The adjusted r square value means **67%** of the data is explained by this model.
+
+
+
+## 6.3 Model 2: Base + Category Dummies
+
+```{r model2}
+m2 <- lm(log_views ~ log_likes + log_comments + days_to_trend +
+           publish_hour + category,
+         data = reg_df)
+
+summary(m2)
+```
+
+For the second model, we **included categories**. Our **dummy variable is Entertainment** because it performs well across all countries, which makes interpretations less variable when comparing globally, compared to other categories.
+
+Generally from the output we can see **most categories do not perform as well** as entertainment due to the negative values.
+
+For model interpretation, the p value is also smaller than 0.05 which means it is **statistically significant**. The Adjusted r square value **increased slightly to 69%** here, which means categories increases model explanation of variance in the data.
+
+## 6.4 Model 3: Region-Stratified Regression
+
+Model 3 performs region-stratified regression to examine how predictors affect `log_views` within each country separately.
+
+```{r model3-fit}
+m3 <- lapply(unique(df$region), function(r) {
+  lm(log_views ~ log_likes + log_comments + days_to_trend +
+       publish_hour + category,
+     data = df %>%
+       filter(region == r) %>%
+       mutate(category = relevel(factor(category), ref = "Entertainment")))
+})
+names(m3) <- unique(df$region)
+```
+
+### US Region Summary (Sample)
+
+```{r model3-us-summary}
+summary(m3[["US"]])
+```
+
+### Coefficient Comparison Across Regions
+
+The coefficient estimates and confidence intervals are extracted for each region to enable cross-regional comparison.
+
+```{r model3-coefs, fig.cap="Regression Coefficients by Region"}
+region_coefs <- bind_rows(
+  lapply(names(m3), function(r) {
+    tidy(m3[[r]], conf.int = TRUE) %>%
+      mutate(region = r)
+  })
+)
+
+ggplot(region_coefs %>% filter(term != "(Intercept)"),
+       aes(x = region, y = estimate,
+           ymin = conf.low, ymax = conf.high,
+           colour = region)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(~ term, scales = "free_y") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Regression Coefficients Across Regions",
+       y = "Estimate", x = "Region", colour = "Region")
+```
+
+The 3rd model separates the 2nd model by its country. We have found the **best performing categories** to be film & animation, gaming, Music, Science & Tech and sports. We also found that **days to trend has a high outlier** which is India, which could explain why the data was skewed to positive in the model. For **publishing hour**, we see that the only positive relationships are Korea and US, which means posting later might be better for them.
+
+The **worst performing categories** generally are education, people & blogs, and howto & style. The rest has exceptions.
+
+
+## 6.5 Model Comparison
+
+### R² Summary
+
+```{r model-comparison-r2}
+cat("M1  R²:", round(summary(m1)$r.squared, 4),
+    " | Adj R²:", round(summary(m1)$adj.r.squared, 4), "\n")
+cat("M2  R²:", round(summary(m2)$r.squared, 4),
+    " | Adj R²:", round(summary(m2)$adj.r.squared, 4), "\n")
+```
+
+R2 summary for model 1 and model 2 here reiterates previous findings.
+### Model 3: R² by Region
+
+```{r model3-fit-table}
+region_fit <- bind_rows(
+  lapply(names(m3), function(r) {
+    glance(m3[[r]]) %>% mutate(region = r)
+  })
+)
+
+region_fit %>%
+  select(region, r.squared, adj.r.squared, statistic, p.value) %>%
+  mutate(p.value = format(p.value, scientific = TRUE)) %>%
+  knitr::kable(digits = 4, caption = "Model 3 Fit Statistics by Region")
+```
+
+Looking at model fit for each country, the **best fits** are US followed by Great Britan and Denmark. The **worst fits** are Korea, Japan, and Russia.
+
+### ANOVA: Model 1 vs Model 2
+
+```{r anova-m1-m2}
+anova(m1, m2)
+```
+
+We also did ANOVA analysis for model 1 and 2 which asks if adding categories explains more variance than without. The F value shows that the **model’s error decreased**, and with a p-value is close to 0, it shows us this is statistically significant.
+
+## 6.6 Category Coefficient Plot (Model 2)
+
+The plot below shows category-level coefficients relative to the Entertainment baseline.
+
+```{r coef-plot, fig.cap="Category Coefficients vs Entertainment Baseline (Model 2)"}
+coef_df <- as.data.frame(summary(m2)$coefficients)
+coef_df$term <- rownames(coef_df)
+names(coef_df) <- c("estimate", "se", "t", "p", "term")
+
+cat_coefs <- coef_df %>%
+  filter(grepl("^category", term)) %>%
+  mutate(
+    term  = gsub("^category", "", term),
+    lower = estimate - 1.96 * se,
+    upper = estimate + 1.96 * se,
+    sig   = ifelse(p < 0.05, "Significant", "Not significant")
+  ) %>%
+  arrange(estimate)
+
+ggplot(cat_coefs, aes(x = reorder(term, estimate),
+                      y = estimate,
+                      ymin = lower, ymax = upper,
+                      colour = sig)) +
+  geom_pointrange(linewidth = 0.7) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey50") +
   coord_flip() +
-  scale_fill_manual(values = c("#e74c3c", "#27ae60")) +
+  scale_colour_manual(values = c("Significant"     = "#3B82F6",
+                                 "Not significant" = "#94A3B8")) +
   labs(
-    title = "Significant Predictors of Engagement",
-    subtitle = "Coefficient estimates with 95% CI",
-    x = NULL,
-    y = "Coefficient"
+    title    = "Category Coefficients (vs Entertainment Baseline)",
+    subtitle = "Positive = more views than Entertainment; negative = fewer",
+    x        = NULL,
+    y        = "Coefficient (\u0394 log views)",
+    colour   = NULL
   ) +
-  theme_minimal(base_size = 11) +
-  theme(plot.title = element_text(face = "bold"))
+  theme_minimal(base_size = 12)
 ```
 
-## 6.4 Model with Title Pattern Interaction
+With a clearer data graph, we can see that categories that do better than Entertainment is Sports, Film & Animation, Music, and others.
 
-```{r interaction-model}
-# Model with title pattern and region interaction
-model_interact <- lm(engagement_rate ~ title_pattern * region + log_views +
-                       days_to_trend + title_length,
-                     data = model_data)
 
-cat("Model with Title Pattern x Region Interaction\n")
-cat("==============================================\n")
-cat("R-squared:", round(summary(model_interact)$r.squared, 4), "\n")
-cat("F-statistic:", round(summary(model_interact)$fstatistic[1], 2), "\n")
+## 6.7 Residual Diagnostics (Model 2)
 
-# ANOVA
-anova_interact <- anova(model_interact)
-cat("\nANOVA (Main Effects):\n")
-print(head(anova_interact, 5))
-```
-
-## 6.5 Model Diagnostics
-
-```{r diagnostics, fig.height=6}
+```{r residual-diagnostics, fig.cap="Residual Diagnostic Plots for Model 2", fig.height=6}
 par(mfrow = c(2, 2))
-plot(model_global, which = 1:4, cex = 0.5)
+plot(m2, which = 1:4)
 par(mfrow = c(1, 1))
 ```
 
+Residual diagnostics show **mild non-linearity and heteroscedasticity**, with some outliers present. However, no severe violations are observed, and the model remains a reasonable approximation given the large and heterogeneous dataset. Therefore, the model remains a reasonable approximation but the actual predicted amount with a grain of salt.
+
+## 6.8 Key Regression Insights
+
+- **`log_comments` and `log_likes`** have a strong positive relationship with views — engagement begets reach.
+- **`publish_hour`** is negatively associated with views — videos uploaded later in the day tend to receive fewer views.
+- **Category effects vary across countries**, suggesting regional content preferences.
+- **Film & Animation, Music, and Sports** consistently outperform the Entertainment baseline in views globally.
+
 ------------------------------------------------------------------------
 
-# 7. Conclusion and Recommendations
+# 7 PCA-Based Regression — How Much Fit Is Lost from 9 to 4 PCs?
 
-## 7.1 Key Findings Summary
+In Section 4, PCA was run on all 9 numeric variables (including `log_views`), producing 9 orthogonal components. Since PCA is a lossless rotation of the original variable space, regressing `log_views` on **all 9 PCs** is mathematically equivalent to a full OLS regression — it perfectly reconstructs `log_views` (R² = 1). This gives us a natural ceiling.
+
+The key question is: **how much of that perfect fit survives when we drop to just 4 PCs?** The 4-PC cutoff follows the Kaiser rule from Section 4 (eigenvalue > 1). The R² gap between the two models is the cost of dimensionality reduction.
+
+### 7.1 Build the PC Regression Dataset
+
+```{r pc-reg-data}
+# All 9 PC scores from pca_result (fitted in Section 4)
+pc_scores <- as.data.frame(pca_result$x)
+
+# Attach outcome from the same PCA rows
+pc_scores$log_views <- pca_df$log_views
+
+cat("Rows in PC regression dataset:", nrow(pc_scores), "\n")
+```
+
+### 7.2 Fit the Two Models
+
+```{r pc-reg-models}
+# Full model: all 9 PCs (lossless rotation — R² = 1 by design)
+m_pc9 <- lm(log_views ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9,
+            data = pc_scores)
+
+# Reduced model: first 4 PCs only (Kaiser rule cutoff)
+m_pc4 <- lm(log_views ~ PC1 + PC2 + PC3 + PC4,
+            data = pc_scores)
+
+summary(m_pc9)
+summary(m_pc4)
+```
+
+### 7.3 Model Comparison Table
+
+```{r pc-reg-table}
+fit_comparison <- data.frame(
+  Model    = c("M_PC4 (4 components)", "M_PC9 (9 components, full)"),
+  PCs_Used = c(4, 9),
+  R2       = round(c(summary(m_pc4)$r.squared,     summary(m_pc9)$r.squared),     4),
+  Adj_R2   = round(c(summary(m_pc4)$adj.r.squared, summary(m_pc9)$adj.r.squared), 4),
+  RMSE     = round(c(sigma(m_pc4), sigma(m_pc9)), 4)
+)
+
+fit_comparison$R2_Lost <- round(max(fit_comparison$R2) - fit_comparison$R2, 4)
+
+knitr::kable(
+  fit_comparison,
+  col.names = c("Model", "PCs Used", "R\u00b2", "Adj R\u00b2", "RMSE", "R\u00b2 Lost vs Full"),
+  caption   = "Regression Fit: 4-PC vs 9-PC Model"
+)
+```
+
+Approximately **9.08% of R² is lost** when moving from 9 PCs to 4 PCs.
+
+### 7.4 Progressive R² Across All PC Cutoffs
+
+```{r pc-reg-progressive, fig.cap="R-squared of log_views regressed on PC1 through PCk, for k = 1 to 9"}
+progressive_r2 <- data.frame(
+  k  = 1:9,
+  r2 = sapply(1:9, function(k) {
+    f <- as.formula(paste("log_views ~", paste0("PC", 1:k, collapse = " + ")))
+    summary(lm(f, data = pc_scores))$r.squared
+  })
+)
+
+ggplot(progressive_r2, aes(x = k, y = r2)) +
+  geom_col(aes(fill = k <= 4), width = 0.65, alpha = 0.85) +
+  geom_line(colour = "#1E40AF", linewidth = 0.8) +
+  geom_point(colour = "#1E40AF", size = 3) +
+  geom_vline(xintercept = 4.5, linetype = "dashed",
+             colour = "#EF4444", linewidth = 0.8) +
+  annotate("text", x = 4.7, y = 0.1,
+           label = "Kaiser cutoff (4 PCs)", colour = "#EF4444",
+           hjust = 0, size = 3.5) +
+  scale_fill_manual(values = c("TRUE" = "#3B82F6", "FALSE" = "#CBD5E1"),
+                    guide = "none") +
+  scale_x_continuous(breaks = 1:9) +
+  scale_y_continuous(labels = percent_format(accuracy = 1), limits = c(0, 1)) +
+  labs(
+    title    = "Progressive R\u00b2 as Principal Components Are Added",
+    subtitle = "Blue bars = retained under Kaiser rule; grey = discarded components",
+    x        = "Number of PCs Included",
+    y        = "R\u00b2"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+### 7.5 Cumulative Variance Explained vs R²
+
+```{r pc-reg-cumvar, fig.cap="Cumulative PCA variance explained vs predictive R-squared for log_views"}
+cumvar_df <- data.frame(
+  k       = 1:9,
+  cum_var = cumsum(pca_result$sdev^2) / sum(pca_result$sdev^2),
+  r2      = progressive_r2$r2
+)
+
+cumvar_long <- pivot_longer(cumvar_df, cols = c(cum_var, r2),
+                            names_to = "metric", values_to = "value")
+
+cumvar_long$metric <- ifelse(cumvar_long$metric == "cum_var",
+                             "Cumulative Variance Explained (PCA)",
+                             "R\u00b2 for log_views")
+
+ggplot(cumvar_long, aes(x = k, y = value, colour = metric, group = metric)) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 3) +
+  geom_vline(xintercept = 4, linetype = "dashed", colour = "grey40", linewidth = 0.7) +
+  scale_x_continuous(breaks = 1:9) +
+  scale_y_continuous(labels = percent_format(accuracy = 1), limits = c(0, 1)) +
+  scale_colour_manual(values = c(
+    "Cumulative Variance Explained (PCA)" = "#6366F1",
+    "R\u00b2 for log_views"               = "#3B82F6"
+  )) +
+  labs(
+    title    = "PCA Variance Explained vs Predictive R\u00b2 for log_views",
+    subtitle = "Dashed line = Kaiser cutoff at 4 PCs",
+    x        = "Number of PCs",
+    y        = "Proportion",
+    colour   = NULL
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "bottom")
+```
+
+In both of these graphs, R² stabilises around 90% from PC2 to PC4. While PCs are ordered by explained variance, their predictive contribution to `log_views` is not strictly monotonic. Notably, PC5 provides a larger increase in R² than PC3 and PC4, suggesting it captures variation more directly relevant to the outcome despite explaining less overall variance in the predictor space. This illustrates how PCA prioritises variance over prediction.
+
+------------------------------------------------------------------------
+
+# 8. Conclusion and Recommendations
+
+## 8.1 Key Findings Summary
 
 ```{r findings-table}
 findings <- tibble(
@@ -832,7 +1073,7 @@ kable(findings, caption = "Summary of Key Findings") %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
-## 7.2 Recommendations by Market
+## 8.2 Recommendations by Market
 
 ### For Global YouTubers
 
@@ -861,14 +1102,14 @@ Based on our global analysis:
 4.  **Keep titles 40-60 characters** - Works across all markets
 5.  **Use numbers** - Increases click-through in all regions
 
-## 7.3 Limitations
+## 8.3 Limitations
 
 -   Dataset captures only videos that trended, not failed videos
 -   Historical data (2017-2018) may not reflect current algorithm
 -   Cannot establish causality, only correlation
 -   Language/cultural nuances in titles not fully captured
 
-## 7.4 Technical Summary
+## 8.4 Technical Summary
 
 | Area | Techniques Applied |
 |-------------------------|-----------------------------------------------|
