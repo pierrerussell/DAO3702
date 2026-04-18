@@ -54,7 +54,7 @@ load_country_data <- function(country_code) {
 
   # Add country code and join categories
   videos %>%
-    mutate(country_code = country_code) %>%
+    mutate(country_code = country_code) %>
     left_join(category_map, by = "category_id")
 }
 
@@ -579,7 +579,7 @@ cat("• PC3 — 'Timing': days_to_trend, publish_hour → when the video was re
 cat("\n========== SECTION 5: REGRESSION MODELLING ==========\n")
 
 # ── 5.1  Prepare regression dataset ───────────────────────────────────────────
-reg_youtube_clean <- youtube_clean %>%
+reg_df <- df %>%
   mutate(
     category     = relevel(factor(category), ref = "Entertainment"),  # dummy base
     publish_dow  = relevel(factor(publish_dow), ref = "Monday"),
@@ -594,28 +594,49 @@ reg_youtube_clean <- youtube_clean %>%
   )
 
 # ── 5.2  Model 1: Base model ───────────────────────────────────────────────────
-m1 <- lm(log_views ~ like_ratio + log_comments + days_to_trend + publish_hour,
-          data = reg_youtube_clean)
+m1 <- lm(log_views ~ log_likes + log_comments + days_to_trend + publish_hour,
+          data = reg_df) 
 
 cat("\n── Model 1: Base (continuous predictors only) ──\n")
 print(summary(m1))
 
 # ── 5.3  Model 2: Add category dummies ────────────────────────────────────────
-m2 <- lm(log_views ~ like_ratio + log_comments + days_to_trend +
+
+m2 <- lm(log_views ~ log_likes + log_comments + days_to_trend +
             publish_hour + category,
-          data = reg_youtube_clean)
+          data = reg_df)
 
 cat("\n── Model 2: Base + Category dummies ──\n")
 print(summary(m2))
 
 # ── 5.4  Model 3: Add region + interaction (publish_hour × category) ──────────
-m3 <- lm(log_views ~ like_ratio + log_comments + days_to_trend +
-            publish_hour + category + region +
-            publish_hour:category,
-          data = reg_youtube_clean)
+
+m3 <- lapply(unique(df$region), function(r) {
+  lm(log_views ~ log_likes + log_comments + days_to_trend +
+       publish_hour + category,
+     data = df %>% filter(region == r) %>%
+       mutate(category = relevel(factor(category), ref = "Entertainment")))
+}) # performs region-stratified regression to see how predictors affect log_views within each country.
+
+names(m3) <- unique(df$region)
 
 cat("\n── Model 3: Full model with interaction ──\n")
-print(summary(m3))
+summary(m3[["US"]]) # test, gives summary of US from m3
+
+region_coefs <- bind_rows(
+  lapply(names(m3), function(r) {
+    tidy(m3[[r]], conf.int = TRUE) %>%
+      mutate(region = r)
+  })
+) # prepares data for easy comparison/visualization of how regression coefficients vary by region
+
+ggplot(region_coefs %>% filter(term != "(Intercept)"),
+       aes(x = region, y = estimate, ymin = conf.low, ymax = conf.high, colour = region)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(~ term, scales = "free_y") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # creates a comparison plot of regression coefficients across regions
 
 # Model comparison
 cat("\n── Model comparison ──\n")
@@ -623,20 +644,27 @@ cat("M1 R²:", round(summary(m1)$r.squared, 4),
     " | Adj R²:", round(summary(m1)$adj.r.squared, 4), "\n")
 cat("M2 R²:", round(summary(m2)$r.squared, 4),
     " | Adj R²:", round(summary(m2)$adj.r.squared, 4), "\n")
-cat("M3 R²:", round(summary(m3)$r.squared, 4),
-    " | Adj R²:", round(summary(m3)$adj.r.squared, 4), "\n")
+region_fit <- bind_rows(
+  lapply(names(m3), function(r) {
+    glance(m3[[r]]) %>% mutate(region = r)
+  })
+)
+cat("M3 R² and Adj R²")
+region_fit %>% 
+  select(region, r.squared, adj.r.squared, statistic, p.value) %>%
+  mutate(p.value = format(p.value, scientific = TRUE))
 
-# ANOVA to compare M1 vs M2 vs M3
+# ANOVA to compare M1 vs M2 
 cat("\nANOVA model comparison:\n")
-print(anova(m1, m2, m3))
+print(anova(m1, m2))
 
 # ── 5.5  Coefficient plot for Model 2 ────────────────────────────────────────
-coef_youtube_clean <- as.data.frame(summary(m2)$coefficients)
-coef_youtube_clean$term <- rownames(coef_youtube_clean)
-names(coef_youtube_clean) <- c("estimate", "se", "t", "p", "term")
+coef_df <- as.data.frame(summary(m2)$coefficients)
+coef_df$term <- rownames(coef_df)
+names(coef_df) <- c("estimate", "se", "t", "p", "term")
 
 # Keep only category dummies for interpretability
-cat_coefs <- coef_youtube_clean %>%
+cat_coefs <- coef_df %>%
   filter(grepl("^category", term)) %>%
   mutate(
     term  = gsub("^category", "", term),
@@ -661,21 +689,22 @@ p10 <- ggplot(cat_coefs, aes(x = reorder(term, estimate),
     x        = NULL,
     y        = "Coefficient (Δ log views)",
     colour   = NULL
-  ) +
-  theme_minimal(base_size = 12)
-
+  ) + theme_minimal(base_size = 12)
 print(p10)
-
 # ── 5.6  Residual diagnostics for Model 2 ─────────────────────────────────────
 par(mfrow = c(2, 2))
 plot(m2, which = 1:4)
 par(mfrow = c(1, 1))
-
+# Residual diagnostics show mild non-linearity and heteroscedasticity,
+# with some outliers present. 
+# However, no severe violations are observed, and the model remains a
+# reasonable approximation given the large and heterogeneous dataset.
 cat("\nKey regression insights:\n")
-cat("• log_comments is the strongest predictor of log_views (positive β)\n")
-cat("• like_ratio positively associated with views — engagement begets reach\n")
-cat("• days_to_trend negatively associated — faster-trending videos get more views\n")
-cat("• Music category premium: significantly more views vs Entertainment baseline\n")
+cat("• log_comments and log_likes have a strong relationship with views as predicted\n")
+cat("• positively associated with views — engagement begets reach\n")
+cat("• publishing hour is negatively associated with views — videos uploaded later in day get less views\n")
+cat("• categories performances vary across countries\n")
+cat("• Film & Animation, Music, and Sports: more views globally vs Entertainment baseline\n")
 
 # =============================================================================
 # SECTION 7: CONCLUSIONS & RECOMMENDATIONS
