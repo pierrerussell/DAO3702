@@ -1052,72 +1052,52 @@ In both of these graphs, R² stabilises around 90% from PC2 to PC4. While PCs ar
 
 ------------------------------------------------------------------------
 
-# 8. Conclusion and Recommendations
+# 8. Key Findings and Discussion
 
-## 8.1 Key Findings Summary
+## 8.1 Integrated Key Findings
+This study examines what drives YouTube video virality across markets. Overall, results suggest performance is driven mainly by audience engagement and content, while timing and geography play smaller roles.
 
-```{r findings-table}
-findings <- tibble(
-  Area = c("Country Differences", "Regional Patterns", "Title Strategy",
-           "Category Insights", "Engagement Predictors"),
-  Finding = c(
-    "India has highest engagement (5.8%); Japan lowest (3.1%). Significant statistical differences confirmed via ANOVA.",
-    "Asian markets show different category preferences (Gaming strong in KR/JP); Latin America favors Music content.",
-    "How-To and Listicle titles outperform standard titles by 15-25% globally across all markets.",
-    "Entertainment dominates Western markets; Music leads in Latin America; Gaming strong in Asia.",
-    "Like ratio is the strongest predictor; country effects explain additional variance beyond global patterns."
-  )
-)
+1. Audience engagement is the primary driver of performance
+Regression analysis shows that likes (β ≈ 0.38) and comments (β ≈ 0.28) are the strongest predictors of log_views. This suggests that videos perform best when they generate active audience responses such as reactions, discussion, and interaction. Virality therefore depends more on engagement than passive exposure alone.
 
-kable(findings, caption = "Summary of Key Findings") %>%
-  kable_styling(bootstrap_options = c("striped", "hover"))
-```
+2. Timing alone does not drive success
+Many videos trend within 5 days of publishing, indicating that rapid traction is common. However, PCA shows that timing variables such as days_to_trend and publish_hour have weak relationships with views, likes, and comments. In short, rapid trending may be common, but it does not guarantee stronger performance.
 
-## 8.2 Recommendations by Market
+3. Content explains performance better than contextual factors
+Although engagement differs significantly across countries, the effect size is small (η² ≈ 0.065), indicating that geography explains only a limited share of variation. In contrast, adding content categories improved model fit (adjusted R²: ~0.67 to ~0.69), with several categories outperforming the Entertainment baseline. This suggests that performance is driven more by content and audience response than by where content is posted.
 
-### For Global YouTubers
 
-1.  **Title Optimization**: Use "How-To" or "Listicle" formats - they work across all markets
-2.  **Focus on Engagement**: Like ratio predicts success better than raw views
-3.  **Quick Trending**: Aim to trend within 2-3 days of publishing
+## 8.2 Evaluation of Hypotheses
+•	Engagement and content factors were strongly supported as the main drivers of performance. 
+•	Geographic and regional differences were supported, but with weaker practical influence. 
+•	Latent performance dimensions were supported, with PCA identifying key underlying drivers of performance. 
+•	Predictive relationships were supported, as the regression models explained a substantial share of variation in outcomes. 
 
-### Market-Specific Strategies
+Overall insight:
+Virality is driven primarily by content and audience engagement, while contextual factors play a secondary role.
 
-| Market | Key Insight | Strategy |
-|-------------------|------------------------------|-----------------------|
-| **US/GB/CA** | Entertainment dominates | Focus on entertainment/comedy content |
-| **India** | Highest engagement rates | Emphasize interaction; respond to comments |
-| **Japan** | Most selective trending | Quality over quantity; niche content works |
-| **Korea** | Gaming is strong | Gaming/esports content has high potential |
-| **Mexico/Latin America** | Music dominates | Music-related content; collaborations |
-| **Germany/France** | Balanced categories | Diverse content strategy works |
 
-### Title Best Practices
+## 8.3 Surprising and Non-Intuitive Findings
+1. Early visibility does not guarantee success: Although many videos trend quickly, timing variables contribute only weakly to performance differences. Early exposure alone is therefore insufficient.
 
-Based on our global analysis:
+2. Negative reactions can still increase visibility: Dislikes are positively associated with views and comments, suggesting that controversial or polarising content can also generate attention and engagement.
 
-1.  **"Why Your X is Y"** - Drives curiosity across cultures
-2.  **"5 Ways to..."** - Listicles perform consistently well
-3.  **"How to..."** - Educational content has highest engagement
-4.  **Keep titles 40-60 characters** - Works across all markets
-5.  **Use numbers** - Increases click-through in all regions
 
-## 8.3 Limitations
+## 8.4 Limitations and Scope
+•	The analysis identifies correlations rather than causal relationships. 
+•	Important factors such as recommendation algorithms and creator reputation are not captured in the dataset. 
+•	log_views is used as a proxy for performance and may not capture all aspects of virality. 
+Accordingly, the findings should be interpreted as indicative patterns rather than definitive causal drivers.
 
--   Dataset captures only videos that trended, not failed videos
--   Historical data (2017-2018) may not reflect current algorithm
--   Cannot establish causality, only correlation
--   Language/cultural nuances in titles not fully captured
+## 8.5 Practical Implications and Recommendations
+1. Prioritise engagement-driven content design
+Since likes and comments are the strongest predictors of performance, creators should design content that encourages reactions, discussion, sharing, and repeat interaction to improve reach.
 
-## 8.4 Technical Summary
+2. Focus on content–audience fit over posting conditions
+Given the limited role of geography and timing, creators should prioritise formats and topics that resonate with target audiences rather than over-optimising upload timing or market selection.
 
-| Area | Techniques Applied |
-|-------------------------|-----------------------------------------------|
-| Data Wrangling | dplyr (filter, select, mutate, summarize, group_by), tidyr (pivot_longer), joins across 10 country datasets |
-| Descriptive Analytics | Summary statistics by country/region, ggplot2 visualizations (bar charts, heatmaps, boxplots) |
-| Statistical Inference | ANOVA, Tukey HSD post-hoc, t-tests, chi-square, confidence intervals |
-| Dimensionality Reduction | PCA with prcomp(), scree plots, Kaiser rule, country-level analysis |
-| Regression Modeling | Multiple lm() models with country fixed effects, interactions, coefficient interpretation |
+3. Use analytics as a decision-support tool
+The regression framework can be developed into a planning tool to estimate expected performance from video attributes, helping creators compare content ideas and make better publishing decisions.
 
 ------------------------------------------------------------------------
 
