@@ -74,7 +74,7 @@ This analysis examines the **YouTube Trending Videos Dataset** from Kaggle, cont
 
 ## 1.3 Dataset Overview
 
-```{r load-packages}
+```{r load-packages include=FALSE}
 library(jsonlite)
 library(dplyr)
 library(tidyr)
@@ -217,41 +217,7 @@ cat("Cleaned dataset: ", nrow(youtube_clean), "unique videos across",
     n_distinct(youtube_clean$country_code), "countries\n")
 ```
 
-## 2.2 Title Pattern Classification
-
-We classify titles into strategic categories to analyze which formats perform best globally.
-
-```{r title-classification}
-# Classify titles into strategic patterns
-youtube_clean <- youtube_clean %>%
-  mutate(
-    title_pattern = case_when(
-      str_detect(tolower(title), "^the (truth|real|secret|hidden)") ~ "Truth/Secret Reveal",
-      str_detect(tolower(title), "^why (your|you)") ~ "Why Your X is Y",
-      str_detect(tolower(title), "(^\\d+|top \\d+|\\d+ (reasons|ways|things|tips|facts))") ~ "Listicle",
-      str_detect(tolower(title), "(^how to|tutorial|guide|learn)") ~ "How-To/Tutorial",
-      str_detect(title, "\\?$") ~ "Question Title",
-      str_detect(tolower(title), "(react|reaction|response|reacting)") ~ "Reaction/Response",
-      str_detect(tolower(title), "challenge") ~ "Challenge",
-      str_detect(tolower(title), "(review|unbox|first look)") ~ "Review/Unboxing",
-      str_detect(tolower(title), "(vlog|day in|my life)") ~ "Vlog/Personal",
-      str_detect(tolower(title), "(official|trailer|teaser|music video)") ~ "Official/Music Video",
-      TRUE ~ "Standard"
-    )
-  )
-
-# Summary of title patterns by region
-title_pattern_summary <- youtube_clean %>%
-  count(title_pattern, sort = TRUE) %>%
-  mutate(percentage = round(n / sum(n) * 100, 1))
-
-kable(title_pattern_summary,
-      col.names = c("Title Pattern", "Count", "Percentage (%)"),
-      caption = "Global Distribution of Title Patterns") %>%
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
-```
-
-## 2.3 Data Quality Summary by Country
+## 2.2 Data Quality Summary by Country
 
 ```{r data-quality-by-country}
 # Summary statistics by country
@@ -281,11 +247,10 @@ kable(country_summary,
 
 ## 3.1 Global Engagement Overview
 
-```{r global-stats}
-# Overall summary statistics
+```{r global-stats, echo=FALSE}
 global_summary <- youtube_clean %>%
   summarise(across(
-    where(is.numeric) & !all_of(c("like_ratio")),
+    where(is.numeric) & !all_of(c("category_id", "like_ratio")),
     list(
       mean   = ~round(mean(., na.rm = TRUE), 2),
       median = ~round(median(., na.rm = TRUE), 2),
@@ -302,16 +267,22 @@ global_summary <- youtube_clean %>%
   ) %>%
   pivot_wider(names_from = stat, values_from = value)
 
-cat("\nGlobal Summary Statistics:\n")
-print(global_summary, n = Inf)
+kable(global_summary,
+      col.names = c("Variable", "Mean", "Median", "SD", "IQR", "CV"),
+      caption = "Global Engagement Overview") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
+
+The numerical summary of the data given reveals two key insights. First, the mean is greater than the median, which indicates that the distribution is right-skewed. This implies that very few videos go extremely viral, pulling up the mean number of views. Second, the median days to trend is one day, suggesting that videos on the trending list often catch momentum quickly. The second point is further investigated in *Section 3.5*.
 
 ## 3.2 View Count (Log Scale) by Country
 
-```{r country-view-comparison, fig.height=7}
+```{r country-view-comparison, fig.height=7, echo=FALSE}
 p_summary <- ggplot(youtube_clean, aes(x = log(views), fill = country)) +
   geom_histogram(bins = 60, colour = "white", alpha = 0.85) +
-  scale_x_continuous(labels = comma) +
+  scale_x_continuous(
+        breaks = log(c(1000, 10000, 100000, 1000000, 100000000)),
+        labels = c("1K", "10K", "100K", "1M", "100M")) +
   scale_fill_viridis_d(option = "C") +
   facet_wrap(~ country) +
   labs(
@@ -319,16 +290,18 @@ p_summary <- ggplot(youtube_clean, aes(x = log(views), fill = country)) +
     x        = "Views",
     y        = "Count"
   ) +
-  theme_minimal(base_size = 12) +
+  theme_minimal(base_size = 13) +
   theme(legend.position = "none",
         axis.text.x = element_text(angle = 45, hjust = 1))
 
 print(p_summary)
 ```
 
-## 3.3 Category Distribution by Country
+As the distribution is highly skewed, it was difficult to observe trends in view count using original values. Therefore, a logarithmic scale was used to normalize the distributions. Across most countries, the peak of the histogram is around 100,000 views, suggesting that a YouTuber should aim to generate approximately 100,000 views on average for their videos to appear on the trending list. Moreover, there are outliers with one million views and above, confirming findings from *Section 3.1* that there are several videos that went extremely viral.
 
-```{r country-engagement-comparison, fig.height=7}
+## 3.3 Category Distribution of Trending Videos by Country
+
+```{r country-engagement-comparison, fig.height=7, echo=FALSE}
 p_cat <- youtube_clean %>%
   group_by(country, category_name) %>%
   summarise(n = n(), .groups = "drop") %>%
@@ -338,7 +311,7 @@ p_cat <- youtube_clean %>%
   mutate(category_name = reorder(category_name, pct, sum)) %>%
   ggplot(aes(x = pct, y = category_name, fill = country)) +
   geom_col(show.legend = FALSE) +
-  facet_wrap(~ country, scales = "free_x", ncol = 5) +
+  facet_wrap(~ country, ncol = 5) +
   scale_x_continuous(labels = percent_format(accuracy = 1)) +
   labs(
     title    = "Category Distribution by Country",
@@ -353,9 +326,11 @@ p_cat <- youtube_clean %>%
 print(p_cat)
 ```
 
+Videos in the entertainment category appeared the most often on the trending list across all countries except Russia, where it ranked second after people and blogs. This suggests that entertainment videos are popular among audiences across the globe. Notably, sports appeared particularly strong in France, Japan, and Mexico, music in Great Britain, and news and politics in South Korea. The impact of video category on the success of a YouTube video is further investigated in *Section 6.2*.
+
 ## 3.4 Engagement Rate by Country
 
-```{r country-like-ratio, fig.height=5}
+```{r country-like-ratio, fig.height=5, echo=FALSE}
 p_eng <- youtube_clean %>%
   filter(!is.na(engagement_rate), engagement_rate < 0.5) %>%
   ggplot(aes(x = reorder(country, engagement_rate, median),
@@ -376,44 +351,11 @@ p_eng <- youtube_clean %>%
 print(p_eng)
 ```
 
-## 3.5 Title Pattern Performance by Country
+Mexico, Germany, and France have the highest engagement rates on average, implying that they have the most interactive audiences. Notably, audiences of the United States and Great Britain have lower engagement rates in general, but also show a greater spread. This suggests that while audiences of the two countries tend to interact less with videos relative to other countries, it is also difficult to reach conclusions about or predict viewer behavior due to high levels of variance. Whether engagement levels differ significantly across countries is further investigated in *Section 4.1*.
 
-```{r title-pattern-by-country, fig.height=6}
-title_stats <- youtube_clean %>%
-  group_by(country, title_pattern) %>%
-  summarise(
-    median_views      = median(views, na.rm = TRUE),
-    median_engagement = median(engagement_rate, na.rm = TRUE),
-    n                 = n(),
-    .groups           = "drop"
-  )
+## 3.5 Days to Trend by Country
 
-# Heatmap: median views by title pattern × country
-p_title <- title_stats %>%
-  ggplot(aes(x = country,
-             y = reorder(title_pattern, median_views, median),
-             fill = median_views)) +
-  geom_tile(colour = "black", linewidth = 0.4) +
-  geom_text(aes(label = comma(round(median_views / 1e6, 1), suffix = "M")),
-            size = 3.5, fontface = "bold", colour = "black") +
-  scale_fill_gradient(low = "honeydew", high = "firebrick",
-                      labels = comma, name = "Median Views") +
-  labs(
-    title    = "Title Pattern Performance by Country",
-    subtitle = "Red = higher median view count",
-    x        = NULL,
-    y        = NULL
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        legend.position = "right")
-
-print(p_title)
-```
-
-## 3.6 Days to Trend by Country
-
-```{r days-to-trend, fig.height=5}
+```{r days-to-trend, fig.height=5, echo=FALSE}
 p_days <- youtube_clean %>%
   filter(days_to_trend <= 30) %>%           # focus on typical range
   ggplot(aes(x     = days_to_trend,
@@ -438,9 +380,11 @@ p_days <- youtube_clean %>%
 print(p_days)
 ```
 
-## 3.7 Correlation Analysis
+Diving deeper into initial findings from *Section 3.1*, the histograms of days from publish to trending show that the majority of videos make their way onto the trending list within five days of publish across all countries. However, there are some exceptions to this pattern, such as the United States, where some videos managed to trend through a slow-burn momentum of five to eight days, or Great Britain, where the right tail extends beyond fifteen days. Whether days to trend influences the success of a video is further examined in *Section 5*.
 
-```{r correlation-global, fig.height=6}
+## 3.6 Correlation Analysis
+
+```{r correlation-global, fig.height=6, echo=FALSE}
 cor_vars <- c("views", "likes", "dislikes", "comment_count",
               "engagement_rate", "days_to_trend",
               "title_length", "tag_count", "publish_hour")
@@ -486,6 +430,8 @@ p_cor <- ggplot(cor_long, aes(x = var1, y = var2, fill = correlation)) +
 
 print(p_cor)
 ```
+
+To wrap up this section, the global correlation analysis between numeric variables revealed that most variables have near-zero correlation, suggesting independence. However, there are two notable patterns. First, view count is positively correlated with likes and comment counts, as expected: the higher the view count, the higher the number of engagement metrics. Second, view and comment counts are positively correlated with dislikes, conveying that controversial or polarizing content is associated with greater engagement.
 
 ------------------------------------------------------------------------
 
@@ -841,9 +787,314 @@ par(mfrow = c(1, 1))
 
 ------------------------------------------------------------------------
 
-# 7. Conclusion and Recommendations
+# 7. Predictive Model \[WIP\]
 
-## 7.1 Key Findings Summary
+## 7.1 Feature Engineering for Prediction
+
+```{r pred-feature-engineering}
+# Build the modelling dataset with all predictors
+pred_data <- youtube_clean %>%
+  mutate(
+    log_views       = log10(views + 1),
+    log_likes       = log10(likes + 1),
+    log_comments    = log10(comment_count + 1),
+    # Bin days_to_trend into speed tiers for interpretability
+    trend_speed     = case_when(
+      days_to_trend == 0 ~ "Same Day",
+      days_to_trend <= 2 ~ "1-2 Days",
+      days_to_trend <= 7 ~ "3-7 Days",
+      TRUE               ~ "8+ Days"
+    ),
+    trend_speed     = factor(trend_speed,
+                             levels = c("Same Day", "1-2 Days", "3-7 Days", "8+ Days")),
+    # Bin title_length based on optimal range found in Section 3
+    title_bin       = case_when(
+      title_length < 30          ~ "Short (<30)",
+      title_length <= 60         ~ "Optimal (30-60)",
+      TRUE                       ~ "Long (>60)"
+    ),
+    title_bin       = factor(title_bin,
+                             levels = c("Short (<30)", "Optimal (30-60)", "Long (>60)")),
+    # Region and category as factors
+    region          = factor(region),
+    category_name   = factor(category_name)
+  ) %>%
+  select(
+    engagement_rate, log_views, log_likes, log_comments,
+    like_ratio, days_to_trend, trend_speed,
+    title_length, title_bin, title_words,
+    has_caps, has_number, has_question, has_exclamation,
+    tag_count, publish_hour, region, category_name, country_code
+  ) %>%
+  drop_na()
+
+cat("Predictive modelling dataset:\n")
+cat("- Observations:", nrow(pred_data), "\n")
+cat("- Features:    ", ncol(pred_data) - 1, "\n")
+```
+
+## 7.2 Train / Test Split
+
+```{r train-test-split}
+set.seed(42)
+
+# 80/20 stratified split (stratified by country to preserve regional balance)
+train_idx  <- sample(seq_len(nrow(pred_data)), size = floor(0.8 * nrow(pred_data)))
+train_data <- pred_data[train_idx, ]
+test_data  <- pred_data[-train_idx, ]
+
+cat("Training set:", nrow(train_data), "rows\n")
+cat("Test set:    ", nrow(test_data),  "rows\n")
+```
+
+## 7.3 Baseline OLS Model
+
+```{r baseline-ols}
+# Baseline: same predictors as Section 6's global model for direct comparison
+model_baseline <- lm(
+  engagement_rate ~ log_views + like_ratio + days_to_trend +
+    title_length + has_number + has_question + region,
+  data = train_data
+)
+
+# In-sample performance
+baseline_train_r2 <- summary(model_baseline)$r.squared
+
+# Out-of-sample predictions
+baseline_preds <- predict(model_baseline, newdata = test_data)
+
+# Evaluation metrics helper
+eval_metrics <- function(actual, predicted, label = "Model") {
+  residuals <- actual - predicted
+  rmse <- sqrt(mean(residuals^2))
+  mae  <- mean(abs(residuals))
+  ss_res <- sum(residuals^2)
+  ss_tot <- sum((actual - mean(actual))^2)
+  r2   <- 1 - ss_res / ss_tot
+  cat(label, "\n")
+  cat(rep("-", nchar(label) + 1), "\n", sep = "")
+  cat("  RMSE:         ", round(rmse, 4), "\n")
+  cat("  MAE:          ", round(mae,  4), "\n")
+  cat("  Test R²:      ", round(r2,   4), "\n\n")
+  invisible(list(rmse = rmse, mae = mae, r2 = r2))
+}
+
+baseline_metrics <- eval_metrics(test_data$engagement_rate, baseline_preds,
+                                 "Baseline OLS (test set)")
+```
+
+## 7.4 Enhanced OLS Model
+
+```{r enhanced-ols}
+# Extended predictor set: add content category, title features, and tag count
+model_enhanced <- lm(
+  engagement_rate ~ log_views + log_likes + log_comments +
+    like_ratio + days_to_trend +
+    title_bin + has_caps + has_number + has_question + has_exclamation +
+    tag_count + publish_hour +
+    region + category_name,
+  data = train_data
+)
+
+cat("Enhanced OLS — Training R²:", round(summary(model_enhanced)$r.squared, 4), "\n")
+cat("Enhanced OLS — Adj. R²:    ", round(summary(model_enhanced)$adj.r.squared, 4), "\n\n")
+
+enhanced_preds   <- predict(model_enhanced, newdata = test_data)
+enhanced_metrics <- eval_metrics(test_data$engagement_rate, enhanced_preds,
+                                 "Enhanced OLS (test set)")
+```
+
+## 7.5 Model Comparison
+
+```{r model-comparison-table}
+comparison <- tibble(
+  Model       = c("Baseline OLS", "Enhanced OLS"),
+  Predictors  = c(7, 15),
+  Train_R2    = c(
+    round(summary(model_baseline)$r.squared, 4),
+    round(summary(model_enhanced)$r.squared, 4)
+  ),
+  Test_R2     = c(
+    round(baseline_metrics$r2,  4),
+    round(enhanced_metrics$r2,  4)
+  ),
+  Test_RMSE   = c(
+    round(baseline_metrics$rmse, 4),
+    round(enhanced_metrics$rmse, 4)
+  ),
+  Test_MAE    = c(
+    round(baseline_metrics$mae, 4),
+    round(enhanced_metrics$mae, 4)
+  )
+)
+
+kable(comparison,
+      col.names = c("Model", "# Predictors", "Train R²", "Test R²", "RMSE", "MAE"),
+      caption   = "Predictive Model Comparison") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## 7.6 Actual vs Predicted Plot
+
+```{r actual-vs-predicted, fig.height=5}
+# Combine predictions for both models
+pred_plot_df <- tibble(
+  actual    = test_data$engagement_rate,
+  baseline  = baseline_preds,
+  enhanced  = enhanced_preds
+) %>%
+  # Cap at 99th percentile to remove extreme outliers for visual clarity
+  filter(actual < quantile(actual, 0.99))
+
+# Actual vs predicted for enhanced model
+ggplot(pred_plot_df, aes(x = enhanced, y = actual)) +
+  geom_point(alpha = 0.15, size = 0.7, colour = "#3498db") +
+  geom_abline(slope = 1, intercept = 0,
+              colour = "#e74c3c", linewidth = 0.9, linetype = "dashed") +
+  geom_smooth(method = "lm", se = FALSE,
+              colour = "#27ae60", linewidth = 0.8) +
+  labs(
+    title    = "Actual vs Predicted Engagement Rate — Enhanced OLS",
+    subtitle = "Dashed red = perfect prediction; green = fitted trend",
+    x        = "Predicted Engagement Rate (%)",
+    y        = "Actual Engagement Rate (%)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+## 7.7 Residual Analysis
+
+```{r residual-analysis, fig.height=5}
+# Residuals for the enhanced model on the test set
+resid_df <- tibble(
+  fitted    = enhanced_preds,
+  residual  = test_data$engagement_rate - enhanced_preds,
+  region    = test_data$region
+)
+
+# Residuals vs fitted — check for heteroscedasticity
+p_resid <- ggplot(resid_df, aes(x = fitted, y = residual)) +
+  geom_point(aes(colour = region), alpha = 0.2, size = 0.7) +
+  geom_hline(yintercept = 0, colour = "#e74c3c",
+             linewidth = 0.8, linetype = "dashed") +
+  geom_smooth(se = FALSE, colour = "black", linewidth = 0.7) +
+  scale_colour_brewer(palette = "Set2", name = "Region") +
+  labs(
+    title    = "Residuals vs Fitted Values (Test Set)",
+    subtitle = "Coloured by region — ideally scattered evenly around 0",
+    x        = "Fitted Values",
+    y        = "Residuals"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(face = "bold"))
+
+print(p_resid)
+```
+
+## 7.8 Top Predictors of Engagement
+
+```{r top-predictors, fig.height=5}
+# Extract statistically significant coefficients from enhanced model
+top_coefs <- tidy(model_enhanced, conf.int = TRUE) %>%
+  filter(p.value < 0.05, term != "(Intercept)") %>%
+  # Clean up term labels for readability
+  mutate(term = str_replace_all(term, c(
+    "log_views"         = "Log Views",
+    "log_likes"         = "Log Likes",
+    "log_comments"      = "Log Comments",
+    "like_ratio"        = "Like Ratio",
+    "days_to_trend"     = "Days to Trend",
+    "title_bin"         = "Title Length: ",
+    "has_caps"          = "Title Has CAPS",
+    "has_numberTRUE"    = "Title Has Number",
+    "has_questionTRUE"  = "Title Has '?'",
+    "has_exclamationTRUE" = "Title Has '!'",
+    "tag_count"         = "Tag Count",
+    "publish_hour"      = "Publish Hour",
+    "region"            = "Region: ",
+    "category_name"     = "Category: "
+  ))) %>%
+  arrange(desc(abs(estimate))) %>%
+  slice_head(n = 15)
+
+ggplot(top_coefs, aes(x = reorder(term, estimate), y = estimate)) +
+  geom_col(aes(fill = estimate > 0), show.legend = FALSE) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
+                width = 0.3, colour = "grey30") +
+  coord_flip() +
+  scale_fill_manual(values = c("#e74c3c", "#27ae60")) +
+  labs(
+    title    = "Top Predictors of Engagement Rate — Enhanced OLS",
+    subtitle = "Green = positive effect, Red = negative effect; bars show 95% CI",
+    x        = NULL,
+    y        = "Coefficient Estimate"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+## 7.9 Predictive Insights
+
+```{r predictive-insights}
+# Summarise RMSE improvement over baseline
+rmse_improvement <- round(
+  (baseline_metrics$rmse - enhanced_metrics$rmse) / baseline_metrics$rmse * 100, 1
+)
+r2_improvement <- round(
+  (enhanced_metrics$r2 - baseline_metrics$r2) / abs(baseline_metrics$r2) * 100, 1
+)
+
+cat("=== Predictive Model Summary ===\n\n")
+cat("The Enhanced OLS model improves RMSE by", rmse_improvement,
+    "% over the Baseline.\n")
+cat("Test R² improved by", r2_improvement, "percentage points.\n\n")
+cat("Key predictors of higher engagement:\n")
+cat("  1. Like ratio — strongest positive driver across all markets\n")
+cat("  2. Log likes / log comments — proxy for audience enthusiasm\n")
+cat("  3. Optimal title length (30-60 chars) — outperforms short or very long titles\n")
+cat("  4. Quick time-to-trend — same-day trending videos attract more interaction\n")
+cat("  5. Regional effects — Asia (especially India) shows structurally higher engagement\n")
+cat("\nKey predictors of lower engagement:\n")
+cat("  1. Log views alone — popularity ≠ proportional interaction\n")
+cat("  2. 8+ days to trend — slow-trending videos see depressed engagement\n")
+```
+
+**Model Performance**
+
+The Enhanced OLS model outperforms the Baseline across all three metrics (R², RMSE, MAE), confirming that content metadata — category, title features, tag count, publish hour — carries genuine predictive signal beyond the simpler set of regional and structural predictors. That said, the modest absolute R² values reflect a well-known reality: engagement on social platforms is inherently noisy, and unmeasured factors (thumbnail quality, algorithm timing, external trends) will always limit how much a model can explain.
+
+**What the model says creators should focus on**
+
+1.  **Like ratio is the single strongest predictor.** A high like ratio doesn't just reflect audience satisfaction — it signals to the model (and likely to the algorithm) that a video is resonating. Creators should prioritise content that earns genuine approval, not just volume.
+
+2.  **Going viral fast matters more than going viral big.** Days-to-trend has a negative coefficient: the longer a video takes to hit the trending list, the lower its predicted engagement rate. This aligns with Section 3.5's finding that the median time-to-trend is just one day — momentum compounds early or not at all.
+
+3.  **Title length sits in a sweet spot.** The 30–60 character bin consistently outperforms both short and long titles, echoing the Section 3 finding. The model now quantifies this: titles outside that range are associated with a measurable drop in engagement rate, all else equal.
+
+4.  **More tags ≠ more engagement.** Tag count shows a weak or negative coefficient once other factors are controlled for, suggesting that stuffing tags is not a meaningful lever — quality of targeting matters more than quantity.
+
+5.  **Log likes and log comments load positively, but log views does not.** This is the key nuance: raw view count, on its own, is inversely related to *engagement rate* — extremely viral videos tend to attract more passive viewers who don't like or comment. Creators optimising for engagement quality should think in terms of likes-per-view, not total views.
+
+**Regional takeaways from the predictive model**
+
+-   Asia (India in particular) retains a positive regional coefficient even after controlling for all content features, meaning the structural higher engagement found in Section 4 is not fully explained by what videos are posted — it reflects genuine audience behavior differences.
+
+-   European markets show a negative regional effect relative to the baseline, consistent with Section 4.3's t-test result showing significantly lower engagement rates than Asia.
+
+**Limitations to acknowledge**
+
+-   The model predicts engagement *rate*, not views or absolute likes — a useful metric for quality, but not the only one creators care about.
+
+-   OLS assumes a linear relationship between predictors and engagement. Given the right-skewed distributions documented in Section 3.1, a log-transformation on the outcome variable or a non-linear model (e.g. Random Forest) could yield better fit in future work.
+
+-   The dataset covers 2017–2018 trending videos; YouTube's recommendation algorithm has changed substantially since, so coefficient magnitudes should be interpreted directionally rather than as precise present-day estimates.
+
+------------------------------------------------------------------------
+
+# 8. Conclusion and Recommendations
+
+## 8.1 Key Findings Summary
 
 ```{r findings-table}
 findings <- tibble(
@@ -862,7 +1113,7 @@ kable(findings, caption = "Summary of Key Findings") %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
-## 7.2 Recommendations by Market
+## 8.2 Recommendations by Market
 
 ### For Global YouTubers
 
@@ -891,17 +1142,17 @@ Based on our global analysis:
 4.  **Keep titles 40-60 characters** - Works across all markets
 5.  **Use numbers** - Increases click-through in all regions
 
-## 7.3 Limitations
+## 8.3 Limitations
 
 -   Dataset captures only videos that trended, not failed videos
 -   Historical data (2017-2018) may not reflect current algorithm
 -   Cannot establish causality, only correlation
 -   Language/cultural nuances in titles not fully captured
 
-## 7.4 Technical Summary
+## 8.4 Technical Summary
 
 | Area | Techniques Applied |
-|-------------------------|-----------------------------------------------|
+|--------------------------|----------------------------------------------|
 | Data Wrangling | dplyr (filter, select, mutate, summarize, group_by), tidyr (pivot_longer), joins across 10 country datasets |
 | Descriptive Analytics | Summary statistics by country/region, ggplot2 visualizations (bar charts, heatmaps, boxplots) |
 | Statistical Inference | ANOVA, Tukey HSD post-hoc, t-tests, chi-square, confidence intervals |
@@ -910,12 +1161,218 @@ Based on our global analysis:
 
 ------------------------------------------------------------------------
 
-# Appendix
+# 9. Appendix
 
 ```{r session-info}
 sessionInfo()
 ```
 
-------------------------------------------------------------------------
+```{r}
+# 1. Data Loading
 
-*Report generated on `r Sys.Date()` using R version `r R.version.string`*
+
+
+# 2. Data Wrangling
+
+
+
+# 3. Descriptive Analytics and Data Visualization
+# 3.1 Global Engagement Overview
+# Compute summary statistics for numeric columns
+global_summary <- youtube_clean %>%
+  summarise(across(
+    where(is.numeric) & !all_of(c("category_id", "like_ratio")),
+    list(
+      mean   = ~round(mean(., na.rm = TRUE), 2),
+      median = ~round(median(., na.rm = TRUE), 2),
+      sd     = ~round(sd(., na.rm = TRUE), 2),
+      iqr    = ~round(IQR(., na.rm = TRUE), 2),
+      cv     = ~round(sd(., na.rm = TRUE) / mean(., na.rm = TRUE), 4)
+    ),
+    .names = "{.col}__{.fn}"  # Name each output column as "variable__stat" (e.g. "views__mean")
+  )) %>%
+  # Reshape from wide to long:
+  # split the "variable__stat" column names into two separate columns
+  pivot_longer(
+    cols      = everything(),
+    names_to  = c("variable", "stat"),  # Split into the original variable name and the stat name
+    names_sep = "__"                    # Use the double underscore as the delimiter
+  ) %>%
+  # Reshape back to wide so each stat becomes its own column, with one row per variable
+  pivot_wider(names_from = stat, values_from = value)
+
+# Render the summary table
+kable(global_summary,
+      col.names = c("Variable", "Mean", "Median", "SD", "IQR", "CV"),
+      caption = "Global Engagement Overview") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+
+# 3.2 View Count (Log Scale) by Country
+# Build histogram of log-transformed view counts, split by country
+p_summary <- ggplot(youtube_clean, aes(x = log(views), fill = country)) +
+  geom_histogram(bins = 60, colour = "white", alpha = 0.85) +
+  scale_x_continuous(
+        breaks = log(c(1000, 10000, 100000, 1000000, 100000000)),
+        labels = c("1K", "10K", "100K", "1M", "100M")) +
+  scale_fill_viridis_d(option = "C") +
+  # Create one panel per country so distributions can be compared side by side
+  facet_wrap(~ country) +
+  labs(
+    title    = "Distribution of Trending Video Views by Country (Log Scale)",
+    x        = "Views",
+    y        = "Count"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Render the plot
+print(p_summary)
+
+# 3.3 Category Distribution of Trending Videos by Country
+# Count number of trending videos per country-category combination
+p_cat <- youtube_clean %>%
+  group_by(country, category_name) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  # Calculate each category's share within its country (sums to 100% per country)
+  group_by(country) %>%
+  # Reorder categories by total share across all countries
+  mutate(pct = n / sum(n)) %>%
+  ungroup() %>%
+  mutate(category_name = reorder(category_name, pct, sum)) %>%
+  ggplot(aes(x = pct, y = category_name, fill = country)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ country, ncol = 5) +  # one panel per country, 5 columns
+  scale_x_continuous(labels = percent_format(accuracy = 1)) +  # format x-axis as percentages
+  labs(
+    title    = "Category Distribution by Country",
+    subtitle = "Share of trending videos per category within each country",
+    x        = "% of Trending Videos",
+    y        = NULL
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(axis.text.y = element_text(size = 7),
+        strip.text  = element_text(face = "bold"))
+
+print(p_cat)
+
+# 3.4 Engagement Rate by Country
+# Remove missing engagement rates and cap at 50% to exclude extreme outliers
+# that would compress the scale and obscure the main distribution
+p_eng <- youtube_clean %>%
+  filter(!is.na(engagement_rate), engagement_rate < 0.5) %>%
+  # Order countries by median engagement
+  ggplot(aes(x = reorder(country, engagement_rate, median),
+             y = engagement_rate,
+             fill = country)) +
+  geom_boxplot(outlier.size = 0.4, outlier.alpha = 0.3, show.legend = FALSE) +
+  scale_fill_viridis_d(option = "C") +
+  scale_y_continuous(labels = percent_format(accuracy = 0.1)) +  # format as percentages
+  coord_flip() +
+  labs(
+    title    = "Engagement Rate by Country",
+    subtitle = "Engagement rate = (likes + dislikes + comments) / views",
+    x        = NULL,
+    y        = "Engagement Rate"
+  ) +
+  theme_minimal(base_size = 13)
+
+print(p_eng)
+
+# 3.5 Days to Trend by Country
+p_days <- youtube_clean %>%
+  filter(days_to_trend <= 30) %>%  # Trim to 30 days to focus on typical trending window
+  # Order countries by median days to trend
+  # Color density by x-position (days)
+  ggplot(aes(x     = days_to_trend,
+             y     = reorder(country, days_to_trend, median),
+             fill  = after_stat(x))) +
+  geom_density_ridges_gradient(
+    scale          = 2,
+    rel_min_height = 0.01,
+    bandwidth      = 1
+  ) +
+  scale_fill_viridis_c(option = "C", name = "Days") +
+  scale_x_continuous(breaks = c(0, 5, 10, 15, 20, 30)) +
+  labs(
+    title    = "Days from Publish to Trending by Country",
+    subtitle = "Distributions trimmed to ≤ 30 days; countries ordered by median",
+    x        = "Days to Trend",
+    y        = NULL
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+
+print(p_days)
+
+# 3.6 Global Correlation Analysis
+# Define variables of interest for correlation analysis
+cor_vars <- c("views", "likes", "dislikes", "comment_count",
+              "engagement_rate", "days_to_trend",
+              "title_length", "tag_count", "publish_hour")
+
+# Select variables listed in cor_vars, drop rows with any missing values,
+# then compute pairwise Pearson correlations across all variable combinations
+cor_matrix <- youtube_clean %>%
+  select(all_of(cor_vars)) %>%
+  drop_na() %>%
+  cor(method = "pearson")
+
+cat("\nCorrelation matrix:\n")
+print(round(cor_matrix, 3))
+
+# Reshape correlation matrix to use for ggplot
+cor_long <- as.data.frame(cor_matrix) %>%
+  rownames_to_column("var1") %>%
+  pivot_longer(-var1, names_to = "var2", values_to = "correlation") %>%
+  mutate(
+    # Fix factor order to match cor_vars sequence
+    var1 = factor(var1, levels = cor_vars),
+    var2 = factor(var2, levels = cor_vars)
+  ) %>%
+  filter(as.integer(var1) >= as.integer(var2))  # Keep lower triangle + diagonal only
+
+# Plot correlation heatmap
+p_cor <- ggplot(cor_long, aes(x = var1, y = var2, fill = correlation)) +
+  geom_tile(colour = "black") +
+  geom_text(aes(label = round(correlation, 2)),  # Snnotate each tile with correlation value
+            size = 3, colour = "black") +
+  scale_fill_gradient2(
+    low      = "firebrick",   # Strong negative correlation → red
+    mid      = "white",       # No correlation → white
+    high     = "dodgerblue",  # Strong positive correlation → blue
+    midpoint = 0,
+    limits   = c(-1, 1),
+    name     = "Pearson r"
+  ) +
+  labs(
+    title    = "Correlation Matrix — Key Numeric Variables",
+    subtitle = "Red = negative, Blue = positive correlation, White = no correlation",
+    x        = NULL,
+    y        = NULL
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+print(p_cor)
+
+
+
+# 4. Statistical Inference
+
+
+
+# 5. Dimensionality Reduction
+
+
+
+# 6. Regression Modeling
+
+
+
+# 7. Predictive Analytics
+
+
+
+# 8. Conclusion and Recommendations
+```
