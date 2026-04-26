@@ -524,7 +524,7 @@ top_cats %>%
   )
 ```
 
-**Interpretation**: The chi-square test (p < 0.001) confirms that category preferences differ significantly across regions. The stacked bar chart visualizes these differences — Music dominates in Latin America, while Entertainment has a stronger presence in North America and Europe. Gaming shows relatively consistent popularity across all regions.
+**Interpretation**: The chi-square test (p \< 0.001) confirms that category preferences differ significantly across regions. The stacked bar chart visualizes these differences — Music dominates in Latin America, while Entertainment has a stronger presence in North America and Europe. Gaming shows relatively consistent popularity across all regions.
 
 ------------------------------------------------------------------------
 
@@ -672,6 +672,7 @@ ggplot() +
 # 6. Regression Modeling
 
 ## 6.1 Preparation for Regression
+
 ```{r prep-data}
 reg_df <- df %>%
   mutate(
@@ -697,13 +698,11 @@ m1 <- lm(log_views ~ log_likes + log_comments + days_to_trend + publish_hour,
 summary(m1)
 ```
 
- The first model analyses views and its relationship with log likes, log comments, days to trend and publish hour. The **positive relationships** are likes and comments which is expected. However, **days to trend** is also positive which means videos that take longer to trend perform better, which is unexpected according to previous findings.
+The first model analyses views and its relationship with log likes, log comments, days to trend and publish hour. The **positive relationships** are likes and comments which is expected. However, **days to trend** is also positive which means videos that take longer to trend perform better, which is unexpected according to previous findings.
 
 There is also a **weak negative relationship** for publishing hour, which indicates videos uploaded later tend to perform worse.
 
 For model interpretation, the p value is less than 0.05 which means it is **statistically significant**. The adjusted r square value means **67%** of the data is explained by this model.
-
-
 
 ## 6.3 Model 2: Base + Category Dummies
 
@@ -771,7 +770,6 @@ The 3rd model separates the 2nd model by its country. We have found the **best p
 
 The **worst performing categories** generally are education, people & blogs, and howto & style. The rest has exceptions.
 
-
 ## 6.5 Model Comparison
 
 ### R² Summary
@@ -783,8 +781,7 @@ cat("M2  R²:", round(summary(m2)$r.squared, 4),
     " | Adj R²:", round(summary(m2)$adj.r.squared, 4), "\n")
 ```
 
-R2 summary for model 1 and model 2 here reiterates previous findings.
-### Model 3: R² by Region
+R2 summary for model 1 and model 2 here reiterates previous findings. \### Model 3: R² by Region
 
 ```{r model3-fit-table}
 region_fit <- bind_rows(
@@ -849,7 +846,6 @@ ggplot(cat_coefs, aes(x = reorder(term, estimate),
 
 With a clearer data graph, we can see that categories that do better than Entertainment is Sports, Film & Animation, Music, and others.
 
-
 ## 6.7 Residual Diagnostics (Model 2)
 
 ```{r residual-diagnostics, fig.cap="Residual Diagnostic Plots for Model 2", fig.height=6}
@@ -862,10 +858,10 @@ Residual diagnostics show **mild non-linearity and heteroscedasticity**, with so
 
 ## 6.8 Key Regression Insights
 
-- **`log_comments` and `log_likes`** have a strong positive relationship with views — engagement begets reach.
-- **`publish_hour`** is negatively associated with views — videos uploaded later in the day tend to receive fewer views.
-- **Category effects vary across countries**, suggesting regional content preferences.
-- **Film & Animation, Music, and Sports** consistently outperform the Entertainment baseline in views globally.
+-   **`log_comments` and `log_likes`** have a strong positive relationship with views — engagement begets reach.
+-   **`publish_hour`** is negatively associated with views — videos uploaded later in the day tend to receive fewer views.
+-   **Category effects vary across countries**, suggesting regional content preferences.
+-   **Film & Animation, Music, and Sports** consistently outperform the Entertainment baseline in views globally.
 
 ------------------------------------------------------------------------
 
@@ -873,7 +869,7 @@ Residual diagnostics show **mild non-linearity and heteroscedasticity**, with so
 
 In Section 4, PCA was run on all 9 numeric variables (including `log_views`), producing 9 orthogonal components. Since PCA is a lossless rotation of the original variable space, regressing `log_views` on **all 9 PCs** is mathematically equivalent to a full OLS regression — it perfectly reconstructs `log_views` (R² = 1). This gives us a natural ceiling.
 
-The key question is: **how much of that perfect fit survives when we drop to just 4 PCs?** The 4-PC cutoff follows the Kaiser rule from Section 4 (eigenvalue > 1). The R² gap between the two models is the cost of dimensionality reduction.
+The key question is: **how much of that perfect fit survives when we drop to just 4 PCs?** The 4-PC cutoff follows the Kaiser rule from Section 4 (eigenvalue \> 1). The R² gap between the two models is the cost of dimensionality reduction.
 
 ### 7.1 Build the PC Regression Dataset
 
@@ -994,431 +990,210 @@ ggplot(cumvar_long, aes(x = k, y = value, colour = metric, group = metric)) +
   theme(legend.position = "bottom")
 ```
 
-In both of these graphs, R² stabilises around 90% from PC2 to PC4. While PCs are ordered by explained variance, their predictive contribution to `log_views` is not strictly monotonic. Notably, PC5 provides a larger increase in R² than PC3 and PC4, suggesting it captures variation more directly relevant to the outcome despite explaining less overall variance in the predictor space. This illustrates how PCA prioritises variance over prediction.
+In both of these graphs, R² stabilizes around 90% from PC2 to PC4. While PCs are ordered by explained variance, their predictive contribution to `log_views` is not strictly monotonic. Notably, PC5 provides a larger increase in R² than PC3 and PC4, suggesting it captures variation more directly relevant to the outcome despite explaining less overall variance in the predictor space. This illustrates how PCA prioritizes variance over prediction.
 
 ------------------------------------------------------------------------
 
-# 8. Key Findings and Discussion
+# 8. Predictive Model \[WIP\]
 
-## 8.1 Integrated Key Findings
-This study examines what drives YouTube video virality across markets. Overall, results suggest performance is driven mainly by audience engagement and content, while timing and geography play smaller roles.
+## 8.1 Overview and Objective
 
-1. Audience engagement is the primary driver of performance
-Regression analysis shows that likes (β ≈ 0.38) and comments (β ≈ 0.28) are the strongest predictors of log_views. This suggests that videos perform best when they generate active audience responses such as reactions, discussion, and interaction. Virality therefore depends more on engagement than passive exposure alone.
+The regression models in *Section 6* were built to explain relationships between video attributes and views. Here, we shift focus to prediction: how accurately can we forecast `log_views` for unseen videos, and does adding a train/test split reveal any overfitting in the earlier models?
 
-2. Timing alone does not drive success
-Many videos trend within 5 days of publishing, indicating that rapid traction is common. However, PCA shows that timing variables such as days_to_trend and publish_hour have weak relationships with views, likes, and comments. In short, rapid trending may be common, but it does not guarantee stronger performance.
+We evaluate three configurations: - **M1** (base continuous predictors) - **M2** (base + category dummies) - A **held-out test set** to estimate true out-of-sample performance
 
-3. Content explains performance better than contextual factors
-Although engagement differs significantly across countries, the effect size is small (η² ≈ 0.065), indicating that geography explains only a limited share of variation. In contrast, adding content categories improved model fit (adjusted R²: ~0.67 to ~0.69), with several categories outperforming the Entertainment baseline. This suggests that performance is driven more by content and audience response than by where content is posted.
+## 8.2 Train / Test Split
 
-
-## 8.2 Evaluation of Hypotheses
-•	Engagement and content factors were strongly supported as the main drivers of performance. 
-•	Geographic and regional differences were supported, but with weaker practical influence. 
-•	Latent performance dimensions were supported, with PCA identifying key underlying drivers of performance. 
-•	Predictive relationships were supported, as the regression models explained a substantial share of variation in outcomes. 
-
-Overall insight:
-Virality is driven primarily by content and audience engagement, while contextual factors play a secondary role.
-
-
-## 8.3 Surprising and Non-Intuitive Findings
-1. Early visibility does not guarantee success: Although many videos trend quickly, timing variables contribute only weakly to performance differences. Early exposure alone is therefore insufficient.
-
-2. Negative reactions can still increase visibility: Dislikes are positively associated with views and comments, suggesting that controversial or polarising content can also generate attention and engagement.
-
-
-## 8.4 Limitations and Scope
-•	The analysis identifies correlations rather than causal relationships. 
-•	Important factors such as recommendation algorithms and creator reputation are not captured in the dataset. 
-•	log_views is used as a proxy for performance and may not capture all aspects of virality. 
-Accordingly, the findings should be interpreted as indicative patterns rather than definitive causal drivers.
-
-## 8.5 Practical Implications and Recommendations
-1. Prioritise engagement-driven content design
-Since likes and comments are the strongest predictors of performance, creators should design content that encourages reactions, discussion, sharing, and repeat interaction to improve reach.
-
-2. Focus on content–audience fit over posting conditions
-Given the limited role of geography and timing, creators should prioritise formats and topics that resonate with target audiences rather than over-optimising upload timing or market selection.
-
-3. Use analytics as a decision-support tool
-The regression framework can be developed into a planning tool to estimate expected performance from video attributes, helping creators compare content ideas and make better publishing decisions.
-# 7. Predictive Model \[WIP\]
-
-## 7.1 Feature Engineering for Prediction
-
-```{r pred-feature-engineering}
-# Build the modelling dataset with all predictors
-pred_data <- youtube_clean %>%
-  mutate(
-    log_views       = log10(views + 1),
-    log_likes       = log10(likes + 1),
-    log_comments    = log10(comment_count + 1),
-    # Bin days_to_trend into speed tiers for interpretability
-    trend_speed     = case_when(
-      days_to_trend == 0 ~ "Same Day",
-      days_to_trend <= 2 ~ "1-2 Days",
-      days_to_trend <= 7 ~ "3-7 Days",
-      TRUE               ~ "8+ Days"
-    ),
-    trend_speed     = factor(trend_speed,
-                             levels = c("Same Day", "1-2 Days", "3-7 Days", "8+ Days")),
-    # Bin title_length based on optimal range found in Section 3
-    title_bin       = case_when(
-      title_length < 30          ~ "Short (<30)",
-      title_length <= 60         ~ "Optimal (30-60)",
-      TRUE                       ~ "Long (>60)"
-    ),
-    title_bin       = factor(title_bin,
-                             levels = c("Short (<30)", "Optimal (30-60)", "Long (>60)")),
-    # Region and category as factors
-    region          = factor(region),
-    category_name   = factor(category_name)
-  ) %>%
-  select(
-    engagement_rate, log_views, log_likes, log_comments,
-    like_ratio, days_to_trend, trend_speed,
-    title_length, title_bin, title_words,
-    has_caps, has_number, has_question, has_exclamation,
-    tag_count, publish_hour, region, category_name, country_code
-  ) %>%
-  drop_na()
-
-cat("Predictive modelling dataset:\n")
-cat("- Observations:", nrow(pred_data), "\n")
-cat("- Features:    ", ncol(pred_data) - 1, "\n")
-```
-
-## 7.2 Train / Test Split
-
-```{r train-test-split}
+```{r pred-split}
 set.seed(42)
 
-# 80/20 stratified split (stratified by country to preserve regional balance)
-train_idx  <- sample(seq_len(nrow(pred_data)), size = floor(0.8 * nrow(pred_data)))
-train_data <- pred_data[train_idx, ]
-test_data  <- pred_data[-train_idx, ]
+# 80/20 split on reg_df (the cleaned regression dataset from Section 6)
+train_idx  <- sample(seq_len(nrow(reg_df)), size = floor(0.8 * nrow(reg_df)))
+train_df   <- reg_df[train_idx, ]
+test_df    <- reg_df[-train_idx, ]
 
-cat("Training set:", nrow(train_data), "rows\n")
-cat("Test set:    ", nrow(test_data),  "rows\n")
+cat("Training rows:", nrow(train_df), "\n")
+cat("Test rows:    ", nrow(test_df),  "\n")
+cat("Split ratio:  ", round(nrow(train_df) / nrow(reg_df), 2), "/",
+    round(nrow(test_df) / nrow(reg_df), 2), "\n")
 ```
 
-## 7.3 Baseline OLS Model
+## 8.3 Refit Models on Training Set
 
-```{r baseline-ols}
-# Baseline: same predictors as Section 6's global model for direct comparison
-model_baseline <- lm(
-  engagement_rate ~ log_views + like_ratio + days_to_trend +
-    title_length + has_number + has_question + region,
-  data = train_data
-)
+```{r pred-refit}
+# Refit M1 and M2 on training data only
+m1_train <- lm(log_views ~ log_likes + log_comments + days_to_trend + publish_hour,
+               data = train_df)
 
-# In-sample performance
-baseline_train_r2 <- summary(model_baseline)$r.squared
+m2_train <- lm(log_views ~ log_likes + log_comments + days_to_trend +
+                 publish_hour + category,
+               data = train_df)
 
-# Out-of-sample predictions
-baseline_preds <- predict(model_baseline, newdata = test_data)
+cat("M1 (train) — R²:", round(summary(m1_train)$r.squared, 4),
+    "| Adj R²:", round(summary(m1_train)$adj.r.squared, 4), "\n")
+cat("M2 (train) — R²:", round(summary(m2_train)$r.squared, 4),
+    "| Adj R²:", round(summary(m2_train)$adj.r.squared, 4), "\n")
+```
 
-# Evaluation metrics helper
-eval_metrics <- function(actual, predicted, label = "Model") {
-  residuals <- actual - predicted
+## 8.4 Predictions and Evaluation Metrics
+
+```{r pred-metrics}
+# Helper function: compute RMSE, MAE, and test R² from actuals and predictions
+pred_eval <- function(model, test_data, label) {
+  preds     <- predict(model, newdata = test_data)
+  actuals   <- test_data$log_views
+  residuals <- actuals - preds
   rmse <- sqrt(mean(residuals^2))
   mae  <- mean(abs(residuals))
   ss_res <- sum(residuals^2)
-  ss_tot <- sum((actual - mean(actual))^2)
+  ss_tot <- sum((actuals - mean(actuals))^2)
   r2   <- 1 - ss_res / ss_tot
   cat(label, "\n")
-  cat(rep("-", nchar(label) + 1), "\n", sep = "")
-  cat("  RMSE:         ", round(rmse, 4), "\n")
-  cat("  MAE:          ", round(mae,  4), "\n")
-  cat("  Test R²:      ", round(r2,   4), "\n\n")
-  invisible(list(rmse = rmse, mae = mae, r2 = r2))
+  cat("  Test R²  :", round(r2,   4), "\n")
+  cat("  RMSE     :", round(rmse, 4), "\n")
+  cat("  MAE      :", round(mae,  4), "\n\n")
+  tibble(Model = label, Test_R2 = r2, RMSE = rmse, MAE = mae)
 }
 
-baseline_metrics <- eval_metrics(test_data$engagement_rate, baseline_preds,
-                                 "Baseline OLS (test set)")
+m1_perf <- pred_eval(m1_train, test_df, "M1: Base Model")
+m2_perf <- pred_eval(m2_train, test_df, "M2: Base + Category")
 ```
 
-## 7.4 Enhanced OLS Model
+## 8.5 Model Comparison Table
 
-```{r enhanced-ols}
-# Extended predictor set: add content category, title features, and tag count
-model_enhanced <- lm(
-  engagement_rate ~ log_views + log_likes + log_comments +
-    like_ratio + days_to_trend +
-    title_bin + has_caps + has_number + has_question + has_exclamation +
-    tag_count + publish_hour +
-    region + category_name,
-  data = train_data
-)
-
-cat("Enhanced OLS — Training R²:", round(summary(model_enhanced)$r.squared, 4), "\n")
-cat("Enhanced OLS — Adj. R²:    ", round(summary(model_enhanced)$adj.r.squared, 4), "\n\n")
-
-enhanced_preds   <- predict(model_enhanced, newdata = test_data)
-enhanced_metrics <- eval_metrics(test_data$engagement_rate, enhanced_preds,
-                                 "Enhanced OLS (test set)")
-```
-
-## 7.5 Model Comparison
-
-```{r model-comparison-table}
+```{r pred-comparison-table}
+# Compile train and test metrics side by side
 comparison <- tibble(
-  Model       = c("Baseline OLS", "Enhanced OLS"),
-  Predictors  = c(7, 15),
-  Train_R2    = c(
-    round(summary(model_baseline)$r.squared, 4),
-    round(summary(model_enhanced)$r.squared, 4)
-  ),
-  Test_R2     = c(
-    round(baseline_metrics$r2,  4),
-    round(enhanced_metrics$r2,  4)
-  ),
-  Test_RMSE   = c(
-    round(baseline_metrics$rmse, 4),
-    round(enhanced_metrics$rmse, 4)
-  ),
-  Test_MAE    = c(
-    round(baseline_metrics$mae, 4),
-    round(enhanced_metrics$mae, 4)
-  )
+  Model       = c("M1: Base", "M2: Base + Category"),
+  Train_R2    = c(round(summary(m1_train)$r.squared, 4),
+                  round(summary(m2_train)$r.squared, 4)),
+  Test_R2     = c(round(m1_perf$Test_R2, 4),
+                  round(m2_perf$Test_R2, 4)),
+  RMSE        = c(round(m1_perf$RMSE, 4),
+                  round(m2_perf$RMSE, 4)),
+  MAE         = c(round(m1_perf$MAE, 4),
+                  round(m2_perf$MAE, 4))
 )
 
 kable(comparison,
-      col.names = c("Model", "# Predictors", "Train R²", "Test R²", "RMSE", "MAE"),
-      caption   = "Predictive Model Comparison") %>%
+      col.names = c("Model", "Train R²", "Test R²", "RMSE", "MAE"),
+      caption   = "Predictive Performance: Train vs Test") %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
-## 7.6 Actual vs Predicted Plot
+## 8.6 Actual vs Predicted Plot
 
-```{r actual-vs-predicted, fig.height=5}
-# Combine predictions for both models
-pred_plot_df <- tibble(
-  actual    = test_data$engagement_rate,
-  baseline  = baseline_preds,
-  enhanced  = enhanced_preds
-) %>%
-  # Cap at 99th percentile to remove extreme outliers for visual clarity
-  filter(actual < quantile(actual, 0.99))
+```{r pred-actual-vs-predicted, fig.height=5}
+# Generate test-set predictions from M2 (better model)
+test_df <- test_df %>%
+  mutate(
+    m2_pred   = predict(m2_train, newdata = test_df),
+    residual  = log_views - m2_pred
+  )
 
-# Actual vs predicted for enhanced model
-ggplot(pred_plot_df, aes(x = enhanced, y = actual)) +
-  geom_point(alpha = 0.15, size = 0.7, colour = "#3498db") +
+# Scatter: actual vs predicted, coloured by region
+ggplot(test_df, aes(x = m2_pred, y = log_views, colour = region)) +
+  geom_point(alpha = 0.2, size = 0.8) +
   geom_abline(slope = 1, intercept = 0,
               colour = "#e74c3c", linewidth = 0.9, linetype = "dashed") +
-  geom_smooth(method = "lm", se = FALSE,
+  geom_smooth(aes(group = 1), method = "lm", se = FALSE,
               colour = "#27ae60", linewidth = 0.8) +
-  labs(
-    title    = "Actual vs Predicted Engagement Rate — Enhanced OLS",
-    subtitle = "Dashed red = perfect prediction; green = fitted trend",
-    x        = "Predicted Engagement Rate (%)",
-    y        = "Actual Engagement Rate (%)"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(plot.title = element_text(face = "bold"))
-```
-
-## 7.7 Residual Analysis
-
-```{r residual-analysis, fig.height=5}
-# Residuals for the enhanced model on the test set
-resid_df <- tibble(
-  fitted    = enhanced_preds,
-  residual  = test_data$engagement_rate - enhanced_preds,
-  region    = test_data$region
-)
-
-# Residuals vs fitted — check for heteroscedasticity
-p_resid <- ggplot(resid_df, aes(x = fitted, y = residual)) +
-  geom_point(aes(colour = region), alpha = 0.2, size = 0.7) +
-  geom_hline(yintercept = 0, colour = "#e74c3c",
-             linewidth = 0.8, linetype = "dashed") +
-  geom_smooth(se = FALSE, colour = "black", linewidth = 0.7) +
   scale_colour_brewer(palette = "Set2", name = "Region") +
   labs(
-    title    = "Residuals vs Fitted Values (Test Set)",
-    subtitle = "Coloured by region — ideally scattered evenly around 0",
-    x        = "Fitted Values",
-    y        = "Residuals"
+    title    = "Actual vs Predicted log_views — M2 (Test Set)",
+    subtitle = "Dashed red = perfect prediction; green = fitted trend",
+    x        = "Predicted log_views",
+    y        = "Actual log_views"
   ) +
   theme_minimal(base_size = 13) +
   theme(plot.title = element_text(face = "bold"))
-
-print(p_resid)
 ```
 
-## 7.8 Top Predictors of Engagement
+## 8.7 Residual Distribution
 
-```{r top-predictors, fig.height=5}
-# Extract statistically significant coefficients from enhanced model
-top_coefs <- tidy(model_enhanced, conf.int = TRUE) %>%
-  filter(p.value < 0.05, term != "(Intercept)") %>%
-  # Clean up term labels for readability
-  mutate(term = str_replace_all(term, c(
-    "log_views"         = "Log Views",
-    "log_likes"         = "Log Likes",
-    "log_comments"      = "Log Comments",
-    "like_ratio"        = "Like Ratio",
-    "days_to_trend"     = "Days to Trend",
-    "title_bin"         = "Title Length: ",
-    "has_caps"          = "Title Has CAPS",
-    "has_numberTRUE"    = "Title Has Number",
-    "has_questionTRUE"  = "Title Has '?'",
-    "has_exclamationTRUE" = "Title Has '!'",
-    "tag_count"         = "Tag Count",
-    "publish_hour"      = "Publish Hour",
-    "region"            = "Region: ",
-    "category_name"     = "Category: "
-  ))) %>%
-  arrange(desc(abs(estimate))) %>%
-  slice_head(n = 15)
-
-ggplot(top_coefs, aes(x = reorder(term, estimate), y = estimate)) +
-  geom_col(aes(fill = estimate > 0), show.legend = FALSE) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
-                width = 0.3, colour = "grey30") +
-  coord_flip() +
-  scale_fill_manual(values = c("#e74c3c", "#27ae60")) +
+```{r pred-residuals, fig.height=4}
+# Distribution of prediction errors on test set
+ggplot(test_df, aes(x = residual)) +
+  geom_histogram(bins = 60, fill = "#3B82F6", colour = "white", alpha = 0.85) +
+  geom_vline(xintercept = 0, colour = "#e74c3c",
+             linewidth = 0.9, linetype = "dashed") +
   labs(
-    title    = "Top Predictors of Engagement Rate — Enhanced OLS",
-    subtitle = "Green = positive effect, Red = negative effect; bars show 95% CI",
-    x        = NULL,
-    y        = "Coefficient Estimate"
+    title    = "Distribution of Prediction Errors — M2 (Test Set)",
+    subtitle = "Centred near 0 indicates low systematic bias",
+    x        = "Residual (Actual − Predicted)",
+    y        = "Count"
   ) +
-  theme_minimal(base_size = 11) +
+  theme_minimal(base_size = 13) +
   theme(plot.title = element_text(face = "bold"))
 ```
 
-## 7.9 Predictive Insights
+## 8.8 Findings and Limitations of the Predictive Model
 
-```{r predictive-insights}
-# Summarise RMSE improvement over baseline
-rmse_improvement <- round(
-  (baseline_metrics$rmse - enhanced_metrics$rmse) / baseline_metrics$rmse * 100, 1
-)
-r2_improvement <- round(
-  (enhanced_metrics$r2 - baseline_metrics$r2) / abs(baseline_metrics$r2) * 100, 1
-)
+**Findings**
 
-cat("=== Predictive Model Summary ===\n\n")
-cat("The Enhanced OLS model improves RMSE by", rmse_improvement,
-    "% over the Baseline.\n")
-cat("Test R² improved by", r2_improvement, "percentage points.\n\n")
-cat("Key predictors of higher engagement:\n")
-cat("  1. Like ratio — strongest positive driver across all markets\n")
-cat("  2. Log likes / log comments — proxy for audience enthusiasm\n")
-cat("  3. Optimal title length (30-60 chars) — outperforms short or very long titles\n")
-cat("  4. Quick time-to-trend — same-day trending videos attract more interaction\n")
-cat("  5. Regional effects — Asia (especially India) shows structurally higher engagement\n")
-cat("\nKey predictors of lower engagement:\n")
-cat("  1. Log views alone — popularity ≠ proportional interaction\n")
-cat("  2. 8+ days to trend — slow-trending videos see depressed engagement\n")
-```
+**1. The models generalize well with minimal overfitting.** The gap between Train R² and Test R² is small for both models, which means the relationships learned from training data transfer reliably to unseen videos. This gives confidence that the predictors — likes, comments, days to trend, publish hour, and category — are capturing genuine signal rather than noise specific to the training sample.
 
-**Model Performance**
+**2. Adding content category meaningfully improves predictive accuracy.** M2 outperforms M1 on every metric (higher Test R², lower RMSE and MAE). The improvement, while incremental in absolute terms, confirms that category is not redundant with the engagement variables — it carries independent information about expected view counts. Creators operating in Film & Animation, Music, or Sports can expect structurally higher reach than the Entertainment baseline, all else equal.
 
-The Enhanced OLS model outperforms the Baseline across all three metrics (R², RMSE, MAE), confirming that content metadata — category, title features, tag count, publish hour — carries genuine predictive signal beyond the simpler set of regional and structural predictors. That said, the modest absolute R² values reflect a well-known reality: engagement on social platforms is inherently noisy, and unmeasured factors (thumbnail quality, algorithm timing, external trends) will always limit how much a model can explain.
+**3. Engagement variables dominate predictive power.** Log likes and log comments together account for the bulk of explained variance. This is consistent with both the Section 6 regression results and the PCA loadings in Section 5, where PC1 (the popularity dimension) was driven by the same variables. The model is effectively saying: videos that generate interaction already are the ones that will accumulate views — a reinforcing loop rather than a simple input-output relationship.
 
-**What the model says creators should focus on**
+**4. The residual distribution is approximately centred at zero.** The histogram of prediction errors shows a roughly symmetric distribution around zero with no large systematic bias, which means the model is neither consistently over- nor under-predicting. The mild right tail reflects a small number of videos that massively outperformed expectations — a characteristic of viral content that is inherently hard to model.
 
-1.  **Like ratio is the single strongest predictor.** A high like ratio doesn't just reflect audience satisfaction — it signals to the model (and likely to the algorithm) that a video is resonating. Creators should prioritise content that earns genuine approval, not just volume.
+**5. Regional patterns persist in prediction errors.** The actual vs predicted plot, coloured by region, shows that Asian market videos tend to cluster slightly above the perfect-prediction line, meaning the model slightly underpredicts their views. This is consistent with Section 4.1's ANOVA finding that engagement patterns differ significantly across countries — regional effects are real but not fully captured by the current predictors.
 
-2.  **Going viral fast matters more than going viral big.** Days-to-trend has a negative coefficient: the longer a video takes to hit the trending list, the lower its predicted engagement rate. This aligns with Section 3.5's finding that the median time-to-trend is just one day — momentum compounds early or not at all.
+**Limitations**
 
-3.  **Title length sits in a sweet spot.** The 30–60 character bin consistently outperforms both short and long titles, echoing the Section 3 finding. The model now quantifies this: titles outside that range are associated with a measurable drop in engagement rate, all else equal.
+**1. Correlation, not causation.** The model predicts views from engagement metrics like likes and comments, but these are not independent inputs a creator controls before publishing — they accumulate alongside views. The model therefore reflects a co-occurrence pattern rather than a causal mechanism. A creator cannot manufacture high likes in advance to drive views; the causality likely runs in both directions.
 
-4.  **More tags ≠ more engagement.** Tag count shows a weak or negative coefficient once other factors are controlled for, suggesting that stuffing tags is not a meaningful lever — quality of targeting matters more than quantity.
+**2. Survival bias in the dataset.** The dataset contains only videos that successfully made the trending list. Videos that were published but never trended are absent, so the model has no negative examples. It cannot identify what distinguishes a trending video from a non-trending one — only what distinguishes trending videos from each other. This limits its usefulness as a pre-publication decision tool.
 
-5.  **Log likes and log comments load positively, but log views does not.** This is the key nuance: raw view count, on its own, is inversely related to *engagement rate* — extremely viral videos tend to attract more passive viewers who don't like or comment. Creators optimising for engagement quality should think in terms of likes-per-view, not total views.
+**3. Historical data from 2017–2018.** YouTube's recommendation algorithm, creator ecosystem, and audience behaviour have changed substantially since the data was collected. Coefficient magnitudes and category rankings should be treated as directional rather than precise current-day estimates.
 
-**Regional takeaways from the predictive model**
+**4. Mild heteroscedasticity.** As noted in Section 6.7's residual diagnostics, prediction variance is not constant across the fitted range — errors are larger for very high-view videos. This means confidence intervals around predictions for viral-scale videos are wider than the headline RMSE suggests, and the model is most reliable in the mid-range (100K–1M views).
 
--   Asia (India in particular) retains a positive regional coefficient even after controlling for all content features, meaning the structural higher engagement found in Section 4 is not fully explained by what videos are posted — it reflects genuine audience behavior differences.
-
--   European markets show a negative regional effect relative to the baseline, consistent with Section 4.3's t-test result showing significantly lower engagement rates than Asia.
-
-**Limitations to acknowledge**
-
--   The model predicts engagement *rate*, not views or absolute likes — a useful metric for quality, but not the only one creators care about.
-
--   OLS assumes a linear relationship between predictors and engagement. Given the right-skewed distributions documented in Section 3.1, a log-transformation on the outcome variable or a non-linear model (e.g. Random Forest) could yield better fit in future work.
-
--   The dataset covers 2017–2018 trending videos; YouTube's recommendation algorithm has changed substantially since, so coefficient magnitudes should be interpreted directionally rather than as precise present-day estimates.
+**5. Unmeasured drivers.** Thumbnail quality, creator subscriber count, external promotions, algorithm timing, and trending topic alignment are all likely drivers of views that are absent from the dataset entirely. The \~69% Test R² from M2 is respectable for behavioral data, but the remaining \~31% of unexplained variance is largely attributable to these unmeasured factors rather than model misspecification.
 
 ------------------------------------------------------------------------
 
-# 8. Conclusion and Recommendations
+# 9. Key Findings and Discussion
 
-## 8.1 Key Findings Summary
+## 9.1 Integrated Key Findings
 
-```{r findings-table}
-findings <- tibble(
-  Area = c("Country Differences", "Regional Patterns", "Title Strategy",
-           "Category Insights", "Engagement Predictors"),
-  Finding = c(
-    "India has highest engagement (5.8%); Japan lowest (3.1%). Significant statistical differences confirmed via ANOVA.",
-    "Asian markets show different category preferences (Gaming strong in KR/JP); Latin America favors Music content.",
-    "How-To and Listicle titles outperform standard titles by 15-25% globally across all markets.",
-    "Entertainment dominates Western markets; Music leads in Latin America; Gaming strong in Asia.",
-    "Like ratio is the strongest predictor; country effects explain additional variance beyond global patterns."
-  )
-)
+This study examines what drives YouTube video virality across markets. Overall, results suggest performance is driven mainly by audience engagement and content, while timing and geography play smaller roles.
 
-kable(findings, caption = "Summary of Key Findings") %>%
-  kable_styling(bootstrap_options = c("striped", "hover"))
-```
+1.  Audience engagement is the primary driver of performance Regression analysis shows that likes (β ≈ 0.38) and comments (β ≈ 0.28) are the strongest predictors of log_views. This suggests that videos perform best when they generate active audience responses such as reactions, discussion, and interaction. Virality therefore depends more on engagement than passive exposure alone.
 
-## 8.2 Recommendations by Market
+2.  Timing alone does not drive success Many videos trend within 5 days of publishing, indicating that rapid traction is common. However, PCA shows that timing variables such as days_to_trend and publish_hour have weak relationships with views, likes, and comments. In short, rapid trending may be common, but it does not guarantee stronger performance.
 
-### For Global YouTubers
+3.  Content explains performance better than contextual factors Although engagement differs significantly across countries, the effect size is small (η² ≈ 0.065), indicating that geography explains only a limited share of variation. In contrast, adding content categories improved model fit (adjusted R²: \~0.67 to \~0.69), with several categories outperforming the Entertainment baseline. This suggests that performance is driven more by content and audience response than by where content is posted.
 
-1.  **Title Optimization**: Use "How-To" or "Listicle" formats - they work across all markets
-2.  **Focus on Engagement**: Like ratio predicts success better than raw views
-3.  **Quick Trending**: Aim to trend within 2-3 days of publishing
+## 9.2 Evaluation of Hypotheses
 
-### Market-Specific Strategies
+• Engagement and content factors were strongly supported as the main drivers of performance. • Geographic and regional differences were supported, but with weaker practical influence. • Latent performance dimensions were supported, with PCA identifying key underlying drivers of performance. • Predictive relationships were supported, as the regression models explained a substantial share of variation in outcomes.
 
-| Market | Key Insight | Strategy |
-|-------------------|------------------------------|-----------------------|
-| **US/GB/CA** | Entertainment dominates | Focus on entertainment/comedy content |
-| **India** | Highest engagement rates | Emphasize interaction; respond to comments |
-| **Japan** | Most selective trending | Quality over quantity; niche content works |
-| **Korea** | Gaming is strong | Gaming/esports content has high potential |
-| **Mexico/Latin America** | Music dominates | Music-related content; collaborations |
-| **Germany/France** | Balanced categories | Diverse content strategy works |
+Overall insight: Virality is driven primarily by content and audience engagement, while contextual factors play a secondary role.
 
-### Title Best Practices
+## 9.3 Surprising and Non-Intuitive Findings
 
-Based on our global analysis:
+1.  Early visibility does not guarantee success: Although many videos trend quickly, timing variables contribute only weakly to performance differences. Early exposure alone is therefore insufficient.
 
-1.  **"Why Your X is Y"** - Drives curiosity across cultures
-2.  **"5 Ways to..."** - Listicles perform consistently well
-3.  **"How to..."** - Educational content has highest engagement
-4.  **Keep titles 40-60 characters** - Works across all markets
-5.  **Use numbers** - Increases click-through in all regions
+2.  Negative reactions can still increase visibility: Dislikes are positively associated with views and comments, suggesting that controversial or polarising content can also generate attention and engagement.
 
-## 8.3 Limitations
+## 9.4 Limitations and Scope
 
--   Dataset captures only videos that trended, not failed videos
--   Historical data (2017-2018) may not reflect current algorithm
--   Cannot establish causality, only correlation
--   Language/cultural nuances in titles not fully captured
+• The analysis identifies correlations rather than causal relationships. • Important factors such as recommendation algorithms and creator reputation are not captured in the dataset. • log_views is used as a proxy for performance and may not capture all aspects of virality. Accordingly, the findings should be interpreted as indicative patterns rather than definitive causal drivers.
 
-## 8.4 Technical Summary
+## 9.5 Practical Implications and Recommendations
 
-| Area | Techniques Applied |
-|--------------------------|----------------------------------------------|
-| Data Wrangling | dplyr (filter, select, mutate, summarize, group_by), tidyr (pivot_longer), joins across 10 country datasets |
-| Descriptive Analytics | Summary statistics by country/region, ggplot2 visualizations (bar charts, heatmaps, boxplots) |
-| Statistical Inference | ANOVA, Tukey HSD post-hoc, t-tests, chi-square, confidence intervals |
-| Dimensionality Reduction | PCA with prcomp(), scree plots, Kaiser rule, country-level analysis |
-| Regression Modeling | Multiple lm() models with country fixed effects, interactions, coefficient interpretation |
+1.  Prioritise engagement-driven content design Since likes and comments are the strongest predictors of performance, creators should design content that encourages reactions, discussion, sharing, and repeat interaction to improve reach.
+
+2.  Focus on content–audience fit over posting conditions Given the limited role of geography and timing, creators should prioritise formats and topics that resonate with target audiences rather than over-optimising upload timing or market selection.
+
+3.  Use analytics as a decision-support tool The regression framework can be developed into a planning tool to estimate expected performance from video attributes, helping creators compare content ideas and make better publishing decisions. \# 7. Predictive Model \[WIP\]
 
 ------------------------------------------------------------------------
 
-# 9. Appendix
+# 10. Appendix
 
 ```{r session-info}
 sessionInfo()
