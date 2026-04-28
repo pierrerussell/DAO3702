@@ -4,6 +4,12 @@ subtitle: "DBA3702: Descriptive Analytics with R - Final Project"
 author: "weRready"
 date: "`r Sys.Date()`"
 output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    fig_width: 7
+    fig_height: 4.5
+    latex_engine: xelatex
   html_document:
     toc: true
     toc_float: true
@@ -13,12 +19,6 @@ output:
     code_folding: show
     fig_width: 10
     fig_height: 6
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    fig_width: 7
-    fig_height: 4.5
-    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}
@@ -74,7 +74,7 @@ This analysis examines the **YouTube Trending Videos Dataset** from Kaggle, cont
 
 ## 1.3 Dataset Overview
 
-```{r load-packages include=FALSE}
+```{r load-packages, include=FALSE}
 library(jsonlite)
 library(dplyr)
 library(tidyr)
@@ -95,7 +95,7 @@ library(ggridges)
 set.seed(42)
 ```
 
-```{r load-all-data}
+```{r load-all-data, echo=FALSE}
 # Define country codes and full names
 countries <- tibble(
   code = c("US", "GB", "DE", "CA", "FR", "IN", "JP", "KR", "MX", "RU"),
@@ -133,7 +133,7 @@ cat("Countries:", n_distinct(all_videos$country_code), "\n")
 cat("Variables:", ncol(all_videos), "\n")
 ```
 
-```{r show-country-counts}
+```{r show-country-counts, echo=FALSE}
 # Show observations per country
 country_counts <- all_videos %>%
   count(country_code, name = "observations") %>%
@@ -152,9 +152,9 @@ kable(country_counts,
 
 ## 2.1 Data Cleaning Pipeline
 
-We employ a comprehensive dplyr/tidyr pipeline to clean and transform the combined global dataset.
+We employ a comprehensive `dplyr`/`tidyr` pipeline to clean and transform the combined global dataset.
 
-```{r data-wrangling}
+```{r data-wrangling, echo=FALSE}
 # Clean and transform the combined dataset
 youtube_clean <- all_videos %>%
   # Join with country full names
@@ -219,7 +219,7 @@ cat("Cleaned dataset: ", nrow(youtube_clean), "unique videos across",
 
 ## 2.2 Data Quality Summary by Country
 
-```{r data-quality-by-country}
+```{r data-quality-by-country, echo=FALSE}
 # Summary statistics by country
 country_summary <- youtube_clean %>%
   group_by(country_code, country, region) %>%
@@ -674,11 +674,14 @@ ggplot() +
 ## 6.1 Preparation for Regression
 
 ```{r prep-data}
-reg_df <- df %>%
+reg_df <- youtube_clean %>%
   mutate(
-    category    = relevel(factor(category), ref = "Entertainment"),
-    publish_dow = relevel(factor(publish_dow), ref = "Monday"),
-    region      = factor(region)
+    log_views    = log(views),
+    log_likes    = log(likes + 1),
+    log_comments = log(comment_count + 1),
+    category     = relevel(factor(category_name), ref = "Entertainment"),
+    publish_dow = relevel(factor(as.character(publish_day), ordered = FALSE), ref = "Monday"),
+    region       = factor(region)
   ) %>%
   filter(
     is.finite(log_views),
@@ -725,14 +728,14 @@ For model interpretation, the p value is also smaller than 0.05 which means it i
 Model 3 performs region-stratified regression to examine how predictors affect `log_views` within each country separately.
 
 ```{r model3-fit}
-m3 <- lapply(unique(df$region), function(r) {
+m3 <- lapply(unique(reg_df$region), function(r) {
   lm(log_views ~ log_likes + log_comments + days_to_trend +
        publish_hour + category,
-     data = df %>%
+     data = reg_df %>%
        filter(region == r) %>%
-       mutate(category = relevel(factor(category), ref = "Entertainment")))
+       mutate(category = relevel(factor(category_name), ref = "Entertainment")))
 })
-names(m3) <- unique(df$region)
+names(m3) <- unique(reg_df$region)
 ```
 
 ### US Region Summary (Sample)
@@ -781,7 +784,7 @@ cat("M2  R²:", round(summary(m2)$r.squared, 4),
     " | Adj R²:", round(summary(m2)$adj.r.squared, 4), "\n")
 ```
 
-R2 summary for model 1 and model 2 here reiterates previous findings. \### Model 3: R² by Region
+R^2^ summary for model 1 and model 2 here reiterates previous findings.
 
 ```{r model3-fit-table}
 region_fit <- bind_rows(
@@ -865,25 +868,25 @@ Residual diagnostics show **mild non-linearity and heteroscedasticity**, with so
 
 ------------------------------------------------------------------------
 
-# 7 PCA-Based Regression — How Much Fit Is Lost from 9 to 4 PCs?
+# 7. PCA-Based Regression
 
-In Section 4, PCA was run on all 9 numeric variables (including `log_views`), producing 9 orthogonal components. Since PCA is a lossless rotation of the original variable space, regressing `log_views` on **all 9 PCs** is mathematically equivalent to a full OLS regression — it perfectly reconstructs `log_views` (R² = 1). This gives us a natural ceiling.
+In Section 4, PCA was run on all 9 numeric variables (including `log_views`), producing 9 orthogonal components. Since PCA is a lossless rotation of the original variable space, regressing `log_views` on all 9 PCs is mathematically equivalent to a full OLS regression — it perfectly reconstructs `log_views` (R² = 1), giving a natural ceiling.
 
-The key question is: **how much of that perfect fit survives when we drop to just 4 PCs?** The 4-PC cutoff follows the Kaiser rule from Section 4 (eigenvalue \> 1). The R² gap between the two models is the cost of dimensionality reduction.
+The key question is: how much of that perfect fit survives when the number of PCs is dropped to 4? The 4-PC cutoff follows the Kaiser rule from Section 4 (eigenvalue \> 1). The R² gap between the two models is the cost of dimensionality reduction.
 
-### 7.1 Build the PC Regression Dataset
+### 7.1 Building the PC Regression Dataset
 
 ```{r pc-reg-data}
 # All 9 PC scores from pca_result (fitted in Section 4)
 pc_scores <- as.data.frame(pca_result$x)
 
 # Attach outcome from the same PCA rows
-pc_scores$log_views <- pca_df$log_views
+pc_scores$log_views <- log(pca_data$views)
 
 cat("Rows in PC regression dataset:", nrow(pc_scores), "\n")
 ```
 
-### 7.2 Fit the Two Models
+### 7.2 Fitting the Two Models
 
 ```{r pc-reg-models}
 # Full model: all 9 PCs (lossless rotation — R² = 1 by design)
@@ -957,9 +960,9 @@ ggplot(progressive_r2, aes(x = k, y = r2)) +
 
 ```{r pc-reg-cumvar, fig.cap="Cumulative PCA variance explained vs predictive R-squared for log_views"}
 cumvar_df <- data.frame(
-  k       = 1:9,
+  k       = 1:10,
   cum_var = cumsum(pca_result$sdev^2) / sum(pca_result$sdev^2),
-  r2      = progressive_r2$r2
+  r2      = c(progressive_r2$r2, NA)
 )
 
 cumvar_long <- pivot_longer(cumvar_df, cols = c(cum_var, r2),
@@ -994,17 +997,21 @@ In both of these graphs, R² stabilizes around 90% from PC2 to PC4. While PCs ar
 
 ------------------------------------------------------------------------
 
-# 8. Predictive Model \[WIP\]
+# 8. Predictive Model
 
 ## 8.1 Overview and Objective
 
-The regression models in *Section 6* were built to explain relationships between video attributes and views. Here, we shift focus to prediction: how accurately can we forecast `log_views` for unseen videos, and does adding a train/test split reveal any overfitting in the earlier models?
+In this section, predictive models estimating `log_views` for unseen videos were built, using a train/test split, to verify findings from earlier sections. Two configurations were evaluated:
 
-We evaluate three configurations: - **M1** (base continuous predictors) - **M2** (base + category dummies) - A **held-out test set** to estimate true out-of-sample performance
+-   **M1** (base continuous predictors: logarithm of like count, logarithm of comment count, days to trend, and publish hour)
+
+-   **M2** (base + category dummies: logarithm of like count, logarithm of comment count, days to trend, publish hour, and category)
 
 ## 8.2 Train / Test Split
 
-```{r pred-split}
+Following industry standards, an 80-20 train/test split was used on the cleaned regression dataset from *Section 6*.
+
+```{r pred-split, echo=FALSE}
 set.seed(42)
 
 # 80/20 split on reg_df (the cleaned regression dataset from Section 6)
@@ -1020,7 +1027,9 @@ cat("Split ratio:  ", round(nrow(train_df) / nrow(reg_df), 2), "/",
 
 ## 8.3 Refit Models on Training Set
 
-```{r pred-refit}
+First, M1 and M2 were fitted on training data.
+
+```{r pred-refit, echo=FALSE}
 # Refit M1 and M2 on training data only
 m1_train <- lm(log_views ~ log_likes + log_comments + days_to_trend + publish_hour,
                data = train_df)
@@ -1037,7 +1046,7 @@ cat("M2 (train) — R²:", round(summary(m2_train)$r.squared, 4),
 
 ## 8.4 Predictions and Evaluation Metrics
 
-```{r pred-metrics}
+```{r pred-metrics, echo=FALSE}
 # Helper function: compute RMSE, MAE, and test R² from actuals and predictions
 pred_eval <- function(model, test_data, label) {
   preds     <- predict(model, newdata = test_data)
@@ -1059,9 +1068,11 @@ m1_perf <- pred_eval(m1_train, test_df, "M1: Base Model")
 m2_perf <- pred_eval(m2_train, test_df, "M2: Base + Category")
 ```
 
+The test R^2^ and error metrics suggest that both models generalize well with minimal overfitting. The gap between train R² and test R² is small for both models, implying that the relationships learned from training data can be applied reliably to unseen videos from the test data. This gives confidence that the predictors, likes, comments, days to trend, publish hour, and category, capture genuine signal rather than noise specific to the training sample.
+
 ## 8.5 Model Comparison Table
 
-```{r pred-comparison-table}
+```{r pred-comparison-table, echo=FALSE}
 # Compile train and test metrics side by side
 comparison <- tibble(
   Model       = c("M1: Base", "M2: Base + Category"),
@@ -1080,6 +1091,8 @@ kable(comparison,
       caption   = "Predictive Performance: Train vs Test") %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
+
+M2 outperforms M1 on all three metrics, with higher Test R², lower RMSE and MAE, which suggests that adding content category improves predictive accuracy. The improvement, while incremental in absolute terms, confirms that category is not redundant with the base numeric variables. It carries independent information about expected view counts, as suggested in *Section 4.3* and *Section 6.3*, and contributes predictive power.
 
 ## 8.6 Actual vs Predicted Plot
 
@@ -1109,6 +1122,8 @@ ggplot(test_df, aes(x = m2_pred, y = log_views, colour = region)) +
   theme(plot.title = element_text(face = "bold"))
 ```
 
+The plot above shows that Asian market videos, colored in light blue, tend to cluster slightly above the perfect-prediction line, meaning the model slightly underpredicts their views. This is consistent with findings in *Section 4.1* and *Section 6.8* that, while the impact is limited, engagement patterns changes differs across countries.
+
 ## 8.7 Residual Distribution
 
 ```{r pred-residuals, fig.height=4}
@@ -1127,31 +1142,15 @@ ggplot(test_df, aes(x = residual)) +
   theme(plot.title = element_text(face = "bold"))
 ```
 
-## 8.8 Findings and Limitations of the Predictive Model
+The histogram of prediction errors, known as the residual distribution, shows a roughly symmetric distribution around zero with no large systematic bias. This suggests that the model neither consistently over- nor under-predicts. The mild right tail reflects a small number of videos that massively outperformed expectations, aligning with findings from *Section 3.1* that there are a few videos that go extremely viral.
 
-**Findings**
+## 8.8 Limitations of the Predictive Model
 
-**1. The models generalize well with minimal overfitting.** The gap between Train R² and Test R² is small for both models, which means the relationships learned from training data transfer reliably to unseen videos. This gives confidence that the predictors — likes, comments, days to trend, publish hour, and category — are capturing genuine signal rather than noise specific to the training sample.
+It should be noted that findings in this section indicate correlation, not necessarily causation. The model predicts views from engagement metrics such as ,likes and comments, which accumulate alongside views. The model therefore reflects a co-occurrence pattern rather than a causal mechanism. A YouTuber cannot manufacture high likes in advance to drive views; the causality likely runs in both directions, with high view counts causing high like counts and vice versa.
 
-**2. Adding content category meaningfully improves predictive accuracy.** M2 outperforms M1 on every metric (higher Test R², lower RMSE and MAE). The improvement, while incremental in absolute terms, confirms that category is not redundant with the engagement variables — it carries independent information about expected view counts. Creators operating in Film & Animation, Music, or Sports can expect structurally higher reach than the Entertainment baseline, all else equal.
+Moreover, the dataset may have survival bias, as it only contains videos that successfully made the trending list. Videos that were published but never trended are not included in the dataset, thus the model does have examples of "failed" videos. It cannot identify what distinguishes a trending video from a non-trending one, but only what distinguishes trending videos from each other. This limits its usefulness as a pre-publication decision tool. Furthermore, YouTube's recommendation algorithm, creator ecosystem, and audience behavior are constantly changing. Coefficient magnitudes and category rankings should be treated as directional rather than precise current-day estimates.
 
-**3. Engagement variables dominate predictive power.** Log likes and log comments together account for the bulk of explained variance. This is consistent with both the Section 6 regression results and the PCA loadings in Section 5, where PC1 (the popularity dimension) was driven by the same variables. The model is effectively saying: videos that generate interaction already are the ones that will accumulate views — a reinforcing loop rather than a simple input-output relationship.
-
-**4. The residual distribution is approximately centred at zero.** The histogram of prediction errors shows a roughly symmetric distribution around zero with no large systematic bias, which means the model is neither consistently over- nor under-predicting. The mild right tail reflects a small number of videos that massively outperformed expectations — a characteristic of viral content that is inherently hard to model.
-
-**5. Regional patterns persist in prediction errors.** The actual vs predicted plot, coloured by region, shows that Asian market videos tend to cluster slightly above the perfect-prediction line, meaning the model slightly underpredicts their views. This is consistent with Section 4.1's ANOVA finding that engagement patterns differ significantly across countries — regional effects are real but not fully captured by the current predictors.
-
-**Limitations**
-
-**1. Correlation, not causation.** The model predicts views from engagement metrics like likes and comments, but these are not independent inputs a creator controls before publishing — they accumulate alongside views. The model therefore reflects a co-occurrence pattern rather than a causal mechanism. A creator cannot manufacture high likes in advance to drive views; the causality likely runs in both directions.
-
-**2. Survival bias in the dataset.** The dataset contains only videos that successfully made the trending list. Videos that were published but never trended are absent, so the model has no negative examples. It cannot identify what distinguishes a trending video from a non-trending one — only what distinguishes trending videos from each other. This limits its usefulness as a pre-publication decision tool.
-
-**3. Historical data from 2017–2018.** YouTube's recommendation algorithm, creator ecosystem, and audience behaviour have changed substantially since the data was collected. Coefficient magnitudes and category rankings should be treated as directional rather than precise current-day estimates.
-
-**4. Mild heteroscedasticity.** As noted in Section 6.7's residual diagnostics, prediction variance is not constant across the fitted range — errors are larger for very high-view videos. This means confidence intervals around predictions for viral-scale videos are wider than the headline RMSE suggests, and the model is most reliable in the mid-range (100K–1M views).
-
-**5. Unmeasured drivers.** Thumbnail quality, creator subscriber count, external promotions, algorithm timing, and trending topic alignment are all likely drivers of views that are absent from the dataset entirely. The \~69% Test R² from M2 is respectable for behavioral data, but the remaining \~31% of unexplained variance is largely attributable to these unmeasured factors rather than model misspecification.
+Finally, there are key drivers of view count that are absent from the dataset, such as thumbnail quality, creator subscriber count, external promotions, algorithm timing, and trending topic alignment. The 69% Test R² from M2 is respectable for behavioral data, but the remaining 31% of unexplained variance may be attributed to these unmeasured factors rather than model misspecification.
 
 ------------------------------------------------------------------------
 
@@ -1189,9 +1188,9 @@ Overall insight: Virality is driven primarily by content and audience engagement
 
 2.  Focus on content–audience fit over posting conditions Given the limited role of geography and timing, creators should prioritise formats and topics that resonate with target audiences rather than over-optimising upload timing or market selection.
 
-3.  Use analytics as a decision-support tool The regression framework can be developed into a planning tool to estimate expected performance from video attributes, helping creators compare content ideas and make better publishing decisions. \# 7. Predictive Model \[WIP\]
+3.  Use analytics as a decision-support tool The regression framework can be developed into a planning tool to estimate expected performance from video attributes, helping creators compare content ideas and make better publishing decisions.
 
-------------------------------------------------------------------------
+\newpage
 
 # 10. Appendix
 
@@ -1200,11 +1199,161 @@ sessionInfo()
 ```
 
 ```{r}
+# 0. Load Libraries
+library(jsonlite)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(ggplot2)
+library(scales)
+library(stats)
+library(psych)
+library(tidyverse)
+library(lubridate)
+library(scales)
+library(corrplot)
+library(ggcorrplot)
+library(kableExtra)
+library(broom)
+library(ggridges)
+
+set.seed(42)
+
+
+
 # 1. Data Loading
+# Define country codes and full names
+countries <- tibble(
+  code = c("US", "GB", "DE", "CA", "FR", "IN", "JP", "KR", "MX", "RU"),
+  country = c("United States", "Great Britain", "Germany", "Canada", "France",
+              "India", "Japan", "South Korea", "Mexico", "Russia"),
+  region = c("North America", "Europe", "Europe", "North America", "Europe",
+             "Asia", "Asia", "Asia", "Latin America", "Europe")
+)
+
+# Function to load and process each country's data
+load_country_data <- function(country_code) {
+  # Load videos
+  videos <- read_csv(paste0("data/", country_code, "videos.csv"),
+                     show_col_types = FALSE)
+
+  # Load categories
+  categories_json <- fromJSON(paste0("data/", country_code, "_category_id.json"))
+  category_map <- tibble(
+    category_id = as.integer(categories_json$items$id),
+    category_name = categories_json$items$snippet$title
+  )
+
+  # Add country code and join categories
+  videos %>%
+    mutate(country_code = country_code) %>%
+    left_join(category_map, by = "category_id")
+}
+
+# Load all countries' data
+all_videos <- map_dfr(countries$code, load_country_data)
+
+# Display combined dataset info
+cat("Total observations:", nrow(all_videos), "\n")
+cat("Countries:", n_distinct(all_videos$country_code), "\n")
+cat("Variables:", ncol(all_videos), "\n")
+
+# Show observations per country
+country_counts <- all_videos %>%
+  count(country_code, name = "observations") %>%
+  left_join(countries, by = c("country_code" = "code")) %>%
+  arrange(desc(observations))
+
+kable(country_counts,
+      col.names = c("Code", "Observations", "Country", "Region"),
+      caption = "Dataset Size by Country") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 
 
 
 # 2. Data Wrangling
+# 2.1 Data Cleaning Pipeline
+# Clean and transform the combined dataset
+youtube_clean <- all_videos %>%
+  # Join with country full names
+  left_join(countries, by = c("country_code" = "code")) %>%
+  # Remove duplicates within each country (same video on multiple trending dates)
+  distinct(country_code, video_id, .keep_all = TRUE) %>%
+  # Parse datetime - handle different formats
+  mutate(
+    # Try to parse publish_time
+    publish_time = ymd_hms(publish_time, quiet = TRUE),
+    publish_date = as.Date(publish_time),
+    publish_hour = hour(publish_time),
+    publish_day = wday(publish_time, label = TRUE, abbr = FALSE),
+    publish_month = month(publish_time, label = TRUE, abbr = FALSE),
+    # Parse trending date (format: YY.DD.MM)
+    trending_date = parse_date(trending_date, format = "%y.%d.%m")
+  ) %>%
+  # Calculate engagement metrics
+  mutate(
+    total_engagement = likes + dislikes + comment_count,
+    engagement_rate = ifelse(views > 0, total_engagement / views * 100, NA),
+    like_ratio = ifelse((likes + dislikes) > 0, likes / (likes + dislikes) * 100, NA),
+    comment_rate = ifelse(views > 0, comment_count / views * 100, NA),
+    like_per_view = ifelse(views > 0, likes / views * 100, NA),
+    days_to_trend = as.numeric(trending_date - publish_date),
+    # Title characteristics
+    title_length = nchar(title),
+    title_words = str_count(title, "\\S+"),
+    has_caps = str_detect(title, "[A-Z]{3,}"),
+    has_number = str_detect(title, "\\d"),
+    has_question = str_detect(title, "\\?"),
+    has_exclamation = str_detect(title, "!"),
+    # Tag analysis
+    tag_count = str_count(tags, "\\|") + 1
+  ) %>%
+  # Filter out problematic records
+
+  filter(
+    !video_error_or_removed,
+    views > 0,
+    (likes + dislikes) > 0,
+    !is.na(category_name),
+    !is.na(days_to_trend),
+    days_to_trend >= 0,
+    days_to_trend < 365
+  ) %>%
+  # Select relevant columns
+  select(
+    video_id, title, channel_title, country_code, country, region,
+    category_id, category_name,
+    publish_time, publish_date, publish_hour, publish_day, publish_month,
+    trending_date, days_to_trend,
+    views, likes, dislikes, comment_count, total_engagement,
+    engagement_rate, like_ratio, comment_rate, like_per_view,
+    title_length, title_words, has_caps, has_number, has_question, has_exclamation,
+    tag_count, comments_disabled, ratings_disabled
+  )
+
+cat("Cleaned dataset: ", nrow(youtube_clean), "unique videos across",
+    n_distinct(youtube_clean$country_code), "countries\n")
+
+# 2.2 Data Quality Summary by Country
+# Summary statistics by country
+country_summary <- youtube_clean %>%
+  group_by(country_code, country, region) %>%
+  summarise(
+    Videos = n(),
+    Channels = n_distinct(channel_title),
+    Avg_Views = round(mean(views) / 1000000, 2),
+    Avg_Likes = round(mean(likes) / 1000, 1),
+    Avg_Engagement = round(mean(engagement_rate, na.rm = TRUE), 2),
+    Avg_Like_Ratio = round(mean(like_ratio, na.rm = TRUE), 1),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(Videos))
+
+kable(country_summary,
+      col.names = c("Code", "Country", "Region", "Videos", "Channels",
+                    "Avg Views (M)", "Avg Likes (K)", "Engagement %", "Like Ratio %"),
+      caption = "Summary Statistics by Country") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 
 
 
@@ -1391,20 +1540,528 @@ print(p_cor)
 
 
 # 4. Statistical Inference
+# 4.1 ANOVA: Engagement Differences Across Countries
+# ANOVA for engagement across countries
+anova_country <- aov(engagement_rate ~ country_code, data = youtube_clean)
+anova_summary <- summary(anova_country)
+print(anova_summary)
+
+# Effect size
+ss_between <- anova_summary[[1]]$`Sum Sq`[1]
+ss_total <- sum(anova_summary[[1]]$`Sum Sq`)
+eta_squared <- ss_between / ss_total
+
+cat("\nEffect Size (Eta-squared):", round(eta_squared, 4), "\n")
+cat("Country explains", round(eta_squared * 100, 2), "% of variance in engagement\n")
+
+# 4.1 Post-hoc Analysis: Pairwise Country Comparisons
+# Tukey HSD for pairwise comparisons
+tukey_result <- TukeyHSD(anova_country)
+tukey_df <- as.data.frame(tukey_result$country_code) %>%
+  rownames_to_column("comparison") %>%
+  filter(`p adj` < 0.05) %>%
+  arrange(`p adj`) %>%
+  slice_head(n = 10)
+
+kable(tukey_df, digits = 4,
+      col.names = c("Comparison", "Difference", "Lower CI", "Upper CI", "Adj. P-value"),
+      caption = "Top 10 Significant Pairwise Country Differences (Tukey HSD)") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+
+# 4.3 Chi-Square: Category Preferences by Region
+# Chi-square test for category distribution across regions
+# Create contingency table for top categories
+top_cats <- youtube_clean %>%
+  filter(category_name %in% c("Entertainment", "Music", "Gaming", "Sports", "Comedy"))
+
+contingency <- table(top_cats$region, top_cats$category_name)
+chi_result <- chisq.test(contingency)
+
+cat("Chi-Square Test: Category Distribution by Region\n")
+cat("=================================================\n")
+cat("Chi-square statistic:", round(chi_result$statistic, 2), "\n")
+cat("Degrees of freedom:", chi_result$parameter, "\n")
+cat("P-value:", format.pval(chi_result$p.value, digits = 4), "\n")
+
+# Show contingency table
+kable(contingency, caption = "Category Counts by Region") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+
+# Visualize category distribution by region (stacked bar chart)
+top_cats %>%
+  count(region, category_name) %>%
+  group_by(region) %>%
+  mutate(pct = n / sum(n)) %>%
+  ungroup() %>%
+  ggplot(aes(x = region, y = pct, fill = category_name)) +
+  geom_col(position = "stack", color = "white", linewidth = 0.3) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  scale_fill_brewer(palette = "Set2", name = "Category") +
+  labs(
+    title = "Category Distribution by Region",
+    subtitle = "Chi-square test confirms significant differences in category preferences across regions",
+    x = NULL,
+    y = "Proportion of Trending Videos"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    legend.position = "right"
+  )
 
 
 
 # 5. Dimensionality Reduction
+# 5.1 Data Preparation for PCA
+# Select numeric variables for PCA
+pca_data <- youtube_clean %>%
+  select(views, likes, dislikes, comment_count,
+         engagement_rate, like_ratio, days_to_trend,
+         title_length, title_words, tag_count) %>%
+  drop_na()
+
+pca_vars <- c("log_views", "log_likes", "log_comments",
+              "like_ratio", "dislike_ratio", "comment_ratio",
+              "days_to_trend", "publish_hour", "engagement_rate")
+
+
+# Standardize
+pca_scaled <- scale(pca_data)
+
+cat("PCA Input:\n")
+cat("- Observations:", nrow(pca_scaled), "\n")
+cat("- Variables:", ncol(pca_scaled), "\n")
+cat("- Obs/Var ratio:", round(nrow(pca_scaled) / ncol(pca_scaled), 1), "(should be > 5)\n")
+
+# 5.2 Principal Component Analysis
+# Perform PCA
+pca_result <- prcomp(pca_scaled, center = TRUE, scale. = TRUE)
+
+# Summary
+pca_summary <- summary(pca_result)
+
+# Variance explained
+var_explained <- data.frame(
+  PC = paste0("PC", 1:ncol(pca_scaled)),
+  Eigenvalue = round(pca_result$sdev^2, 3),
+  Variance_Pct = round(pca_summary$importance[2, ] * 100, 2),
+  Cumulative_Pct = round(pca_summary$importance[3, ] * 100, 2)
+)
+
+kable(var_explained, caption = "PCA Variance Explained") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+
+# 5.3 Scree Plot
+scree_data <- data.frame(
+  PC = 1:length(pca_result$sdev),
+  Eigenvalue = pca_result$sdev^2
+)
+
+ggplot(scree_data, aes(x = PC, y = Eigenvalue)) +
+  geom_line(color = "#3498db", size = 1) +
+  geom_point(size = 3, color = "#3498db") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "#e74c3c") +
+  annotate("text", x = 8, y = 1.3, label = "Kaiser Criterion (Eigenvalue = 1)",
+           color = "#e74c3c", size = 3) +
+  scale_x_continuous(breaks = 1:10) +
+  labs(
+    title = "Scree Plot",
+    subtitle = "Retain components with eigenvalue > 1",
+    x = "Principal Component",
+    y = "Eigenvalue"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold"))
+
+n_components <- sum(scree_data$Eigenvalue > 1)
+cat("\nComponents to retain (Kaiser):", n_components, "\n")
+cat("Cumulative variance explained:", var_explained$Cumulative_Pct[n_components], "%\n")
+
+# 5.4 Component Loadings
+loadings_df <- as.data.frame(pca_result$rotation[, 1:n_components])
+loadings_df$Variable <- rownames(loadings_df)
+
+loadings_long <- loadings_df %>%
+  pivot_longer(cols = starts_with("PC"), names_to = "Component", values_to = "Loading")
+
+ggplot(loadings_long, aes(x = Component, y = Variable, fill = Loading)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = round(Loading, 2)), size = 2.5) +
+  scale_fill_gradient2(low = "#e74c3c", mid = "white", high = "#27ae60", midpoint = 0) +
+  labs(
+    title = "PCA Component Loadings",
+    x = "Principal Component",
+    y = NULL
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(plot.title = element_text(face = "bold"))
+
+# 5.5 PCA by Country
+# Add PC scores to data
+scores_df <- as.data.frame(pca_result$x[, 1:2])
+scores_df$country <- youtube_clean$country[complete.cases(pca_data)]
+scores_df$region <- youtube_clean$region[complete.cases(pca_data)]
+
+# Sample for visualization
+set.seed(42)
+scores_sample <- scores_df %>% sample_n(min(3000, nrow(scores_df)))
+
+# Country centroids
+centroids <- scores_df %>%
+  group_by(country) %>%
+  summarise(PC1 = mean(PC1), PC2 = mean(PC2), .groups = "drop")
+
+ggplot() +
+  geom_point(data = scores_sample, aes(x = PC1, y = PC2, color = region),
+             alpha = 0.3, size = 0.8) +
+  geom_point(data = centroids, aes(x = PC1, y = PC2), size = 4, color = "black") +
+  geom_text(data = centroids, aes(x = PC1, y = PC2, label = country),
+            vjust = -1, size = 2.5) +
+  scale_color_brewer(palette = "Set2", name = "Region") +
+  labs(
+    title = "Countries in PCA Space",
+    subtitle = "Black dots = country centroids; colored points = individual videos",
+    x = paste0("PC1 (", var_explained$Variance_Pct[1], "% variance)"),
+    y = paste0("PC2 (", var_explained$Variance_Pct[2], "% variance)")
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(plot.title = element_text(face = "bold"))
 
 
 
 # 6. Regression Modeling
+# 6.1 Preparation for Regression
+reg_df <- youtube_clean %>%
+  mutate(
+    log_views    = log(views),
+    log_likes    = log(likes + 1),
+    log_comments = log(comment_count + 1),
+    category     = relevel(factor(category_name), ref = "Entertainment"),
+    publish_dow = relevel(factor(as.character(publish_day), ordered = FALSE), ref = "Monday"),
+    region       = factor(region)
+  ) %>%
+  filter(
+    is.finite(log_views),
+    is.finite(like_ratio),
+    is.finite(log_comments),
+    is.finite(days_to_trend),
+    !is.na(publish_hour)
+  )
+
+# 6.2 Model 1: Base Model (Global Contiuous Predictors Only)
+m1 <- lm(log_views ~ log_likes + log_comments + days_to_trend + publish_hour,
+         data = reg_df)
+
+summary(m1)
+
+# 6.3 Model 2: Base + Category Dummies
+m2 <- lm(log_views ~ log_likes + log_comments + days_to_trend +
+           publish_hour + category,
+         data = reg_df)
+
+summary(m2)
+
+# 6.4 Model 3: Region-Stratigied Regression
+m3 <- lapply(unique(reg_df$region), function(r) {
+  lm(log_views ~ log_likes + log_comments + days_to_trend +
+       publish_hour + category,
+     data = reg_df %>%
+       filter(region == r) %>%
+       mutate(category = relevel(factor(category_name), ref = "Entertainment")))
+})
+names(m3) <- unique(reg_df$region)
+# US Region Summary (Sample)
+summary(m3[["US"]])
+
+# Coefficient Comparison Across Regions
+region_coefs <- bind_rows(
+  lapply(names(m3), function(r) {
+    tidy(m3[[r]], conf.int = TRUE) %>%
+      mutate(region = r)
+  })
+)
+
+ggplot(region_coefs %>% filter(term != "(Intercept)"),
+       aes(x = region, y = estimate,
+           ymin = conf.low, ymax = conf.high,
+           colour = region)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(~ term, scales = "free_y") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Regression Coefficients Across Regions",
+       y = "Estimate", x = "Region", colour = "Region")
+
+# 6.5 Model Comparison
+# R2 Summary
+cat("M1  R²:", round(summary(m1)$r.squared, 4),
+    " | Adj R²:", round(summary(m1)$adj.r.squared, 4), "\n")
+cat("M2  R²:", round(summary(m2)$r.squared, 4),
+    " | Adj R²:", round(summary(m2)$adj.r.squared, 4), "\n")
+
+region_fit <- bind_rows(
+  lapply(names(m3), function(r) {
+    glance(m3[[r]]) %>% mutate(region = r)
+  })
+)
+
+region_fit %>%
+  select(region, r.squared, adj.r.squared, statistic, p.value) %>%
+  mutate(p.value = format(p.value, scientific = TRUE)) %>%
+  knitr::kable(digits = 4, caption = "Model 3 Fit Statistics by Region")
+
+# ANOVA: M1 vs M2
+anova(m1, m2)
+
+# 6.6 Category Coefficient Plot (M2)
+coef_df <- as.data.frame(summary(m2)$coefficients)
+coef_df$term <- rownames(coef_df)
+names(coef_df) <- c("estimate", "se", "t", "p", "term")
+
+cat_coefs <- coef_df %>%
+  filter(grepl("^category", term)) %>%
+  mutate(
+    term  = gsub("^category", "", term),
+    lower = estimate - 1.96 * se,
+    upper = estimate + 1.96 * se,
+    sig   = ifelse(p < 0.05, "Significant", "Not significant")
+  ) %>%
+  arrange(estimate)
+
+ggplot(cat_coefs, aes(x = reorder(term, estimate),
+                      y = estimate,
+                      ymin = lower, ymax = upper,
+                      colour = sig)) +
+  geom_pointrange(linewidth = 0.7) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey50") +
+  coord_flip() +
+  scale_colour_manual(values = c("Significant"     = "#3B82F6",
+                                 "Not significant" = "#94A3B8")) +
+  labs(
+    title    = "Category Coefficients (vs Entertainment Baseline)",
+    subtitle = "Positive = more views than Entertainment; negative = fewer",
+    x        = NULL,
+    y        = "Coefficient (\u0394 log views)",
+    colour   = NULL
+  ) +
+  theme_minimal(base_size = 12)
+
+# 6.7 Residual Diagnostics (M2)
+par(mfrow = c(2, 2))
+plot(m2, which = 1:4)
+par(mfrow = c(1, 1))
 
 
 
-# 7. Predictive Analytics
+# 7. PCA-Based Regression
+# 7.1 Building the PC Regression Dataset
+# All 9 PC scores from pca_result (fitted in Section 4)
+pc_scores <- as.data.frame(pca_result$x)
+
+# Attach outcome from the same PCA rows
+pc_scores$log_views <- log(pca_data$views)
+
+cat("Rows in PC regression dataset:", nrow(pc_scores), "\n")
+
+# 7.2 Model Fitting
+# Full model: all 9 PCs (lossless rotation — R² = 1 by design)
+m_pc9 <- lm(log_views ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9,
+            data = pc_scores)
+
+# Reduced model: first 4 PCs only (Kaiser rule cutoff)
+m_pc4 <- lm(log_views ~ PC1 + PC2 + PC3 + PC4,
+            data = pc_scores)
+
+summary(m_pc9)
+summary(m_pc4)
+
+# 7.3 Model Comparison Table
+fit_comparison <- data.frame(
+  Model    = c("M_PC4 (4 components)", "M_PC9 (9 components, full)"),
+  PCs_Used = c(4, 9),
+  R2       = round(c(summary(m_pc4)$r.squared,     summary(m_pc9)$r.squared),     4),
+  Adj_R2   = round(c(summary(m_pc4)$adj.r.squared, summary(m_pc9)$adj.r.squared), 4),
+  RMSE     = round(c(sigma(m_pc4), sigma(m_pc9)), 4)
+)
+
+fit_comparison$R2_Lost <- round(max(fit_comparison$R2) - fit_comparison$R2, 4)
+
+knitr::kable(
+  fit_comparison,
+  col.names = c("Model", "PCs Used", "R\u00b2", "Adj R\u00b2", "RMSE", "R\u00b2 Lost vs Full"),
+  caption   = "Regression Fit: 4-PC vs 9-PC Model"
+)
+
+# 7.4 Pregressive R2 Across All PC Cutoffs
+progressive_r2 <- data.frame(
+  k  = 1:9,
+  r2 = sapply(1:9, function(k) {
+    f <- as.formula(paste("log_views ~", paste0("PC", 1:k, collapse = " + ")))
+    summary(lm(f, data = pc_scores))$r.squared
+  })
+)
+
+ggplot(progressive_r2, aes(x = k, y = r2)) +
+  geom_col(aes(fill = k <= 4), width = 0.65, alpha = 0.85) +
+  geom_line(colour = "#1E40AF", linewidth = 0.8) +
+  geom_point(colour = "#1E40AF", size = 3) +
+  geom_vline(xintercept = 4.5, linetype = "dashed",
+             colour = "#EF4444", linewidth = 0.8) +
+  annotate("text", x = 4.7, y = 0.1,
+           label = "Kaiser cutoff (4 PCs)", colour = "#EF4444",
+           hjust = 0, size = 3.5) +
+  scale_fill_manual(values = c("TRUE" = "#3B82F6", "FALSE" = "#CBD5E1"),
+                    guide = "none") +
+  scale_x_continuous(breaks = 1:9) +
+  scale_y_continuous(labels = percent_format(accuracy = 1), limits = c(0, 1)) +
+  labs(
+    title    = "Progressive R\u00b2 as Principal Components Are Added",
+    subtitle = "Blue bars = retained under Kaiser rule; grey = discarded components",
+    x        = "Number of PCs Included",
+    y        = "R\u00b2"
+  ) +
+  theme_minimal(base_size = 13)
+
+# 7.5 Cumulative Variance Explained vs R2
+cumvar_df <- data.frame(
+  k       = 1:10,
+  cum_var = cumsum(pca_result$sdev^2) / sum(pca_result$sdev^2),
+  r2      = c(progressive_r2$r2, NA)
+)
+
+cumvar_long <- pivot_longer(cumvar_df, cols = c(cum_var, r2),
+                            names_to = "metric", values_to = "value")
+
+cumvar_long$metric <- ifelse(cumvar_long$metric == "cum_var",
+                             "Cumulative Variance Explained (PCA)",
+                             "R\u00b2 for log_views")
+
+ggplot(cumvar_long, aes(x = k, y = value, colour = metric, group = metric)) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 3) +
+  geom_vline(xintercept = 4, linetype = "dashed", colour = "grey40", linewidth = 0.7) +
+  scale_x_continuous(breaks = 1:9) +
+  scale_y_continuous(labels = percent_format(accuracy = 1), limits = c(0, 1)) +
+  scale_colour_manual(values = c(
+    "Cumulative Variance Explained (PCA)" = "#6366F1",
+    "R\u00b2 for log_views"               = "#3B82F6"
+  )) +
+  labs(
+    title    = "PCA Variance Explained vs Predictive R\u00b2 for log_views",
+    subtitle = "Dashed line = Kaiser cutoff at 4 PCs",
+    x        = "Number of PCs",
+    y        = "Proportion",
+    colour   = NULL
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "bottom")
 
 
 
-# 8. Conclusion and Recommendations
+# 8. Predictive Model
+# 8.2 Train / Test Split
+# 80/20 split on reg_df (the cleaned regression dataset from Section 6)
+train_idx  <- sample(seq_len(nrow(reg_df)), size = floor(0.8 * nrow(reg_df)))
+train_df   <- reg_df[train_idx, ]
+test_df    <- reg_df[-train_idx, ]
+
+cat("Training rows:", nrow(train_df), "\n")
+cat("Test rows:    ", nrow(test_df),  "\n")
+cat("Split ratio:  ", round(nrow(train_df) / nrow(reg_df), 2), "/",
+    round(nrow(test_df) / nrow(reg_df), 2), "\n")
+
+# 8.3 Refit Models on Training Set
+# Refit M1 and M2 on training data only
+m1_train <- lm(log_views ~ log_likes + log_comments + days_to_trend + publish_hour,
+               data = train_df)
+
+m2_train <- lm(log_views ~ log_likes + log_comments + days_to_trend +
+                 publish_hour + category,
+               data = train_df)
+
+cat("M1 (train) — R²:", round(summary(m1_train)$r.squared, 4),
+    "| Adj R²:", round(summary(m1_train)$adj.r.squared, 4), "\n")
+cat("M2 (train) — R²:", round(summary(m2_train)$r.squared, 4),
+    "| Adj R²:", round(summary(m2_train)$adj.r.squared, 4), "\n")
+
+# 8.4 Predictions and Evaluation Metrics
+# Helper function: compute RMSE, MAE, and test R² from actuals and predictions
+pred_eval <- function(model, test_data, label) {
+  preds     <- predict(model, newdata = test_data)
+  actuals   <- test_data$log_views
+  residuals <- actuals - preds
+  rmse <- sqrt(mean(residuals^2))
+  mae  <- mean(abs(residuals))
+  ss_res <- sum(residuals^2)
+  ss_tot <- sum((actuals - mean(actuals))^2)
+  r2   <- 1 - ss_res / ss_tot
+  cat(label, "\n")
+  cat("  Test R²  :", round(r2,   4), "\n")
+  cat("  RMSE     :", round(rmse, 4), "\n")
+  cat("  MAE      :", round(mae,  4), "\n\n")
+  tibble(Model = label, Test_R2 = r2, RMSE = rmse, MAE = mae)
+}
+
+m1_perf <- pred_eval(m1_train, test_df, "M1: Base Model")
+m2_perf <- pred_eval(m2_train, test_df, "M2: Base + Category")
+
+# 8.5 Model Comparison Table
+# Compile train and test metrics side by side
+comparison <- tibble(
+  Model       = c("M1: Base", "M2: Base + Category"),
+  Train_R2    = c(round(summary(m1_train)$r.squared, 4),
+                  round(summary(m2_train)$r.squared, 4)),
+  Test_R2     = c(round(m1_perf$Test_R2, 4),
+                  round(m2_perf$Test_R2, 4)),
+  RMSE        = c(round(m1_perf$RMSE, 4),
+                  round(m2_perf$RMSE, 4)),
+  MAE         = c(round(m1_perf$MAE, 4),
+                  round(m2_perf$MAE, 4))
+)
+
+kable(comparison,
+      col.names = c("Model", "Train R²", "Test R²", "RMSE", "MAE"),
+      caption   = "Predictive Performance: Train vs Test") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+
+# 8.6 Actual vs Predicted Plot
+# Generate test-set predictions from M2 (better model)
+test_df <- test_df %>%
+  mutate(
+    m2_pred   = predict(m2_train, newdata = test_df),
+    residual  = log_views - m2_pred
+  )
+
+# Scatter: actual vs predicted, coloured by region
+ggplot(test_df, aes(x = m2_pred, y = log_views, colour = region)) +
+  geom_point(alpha = 0.2, size = 0.8) +
+  geom_abline(slope = 1, intercept = 0,
+              colour = "#e74c3c", linewidth = 0.9, linetype = "dashed") +
+  geom_smooth(aes(group = 1), method = "lm", se = FALSE,
+              colour = "#27ae60", linewidth = 0.8) +
+  scale_colour_brewer(palette = "Set2", name = "Region") +
+  labs(
+    title    = "Actual vs Predicted log_views — M2 (Test Set)",
+    subtitle = "Dashed red = perfect prediction; green = fitted trend",
+    x        = "Predicted log_views",
+    y        = "Actual log_views"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(face = "bold"))
+
+# 8.7 Residual Distribution
+# Distribution of prediction errors on test set
+ggplot(test_df, aes(x = residual)) +
+  geom_histogram(bins = 60, fill = "#3B82F6", colour = "white", alpha = 0.85) +
+  geom_vline(xintercept = 0, colour = "#e74c3c",
+             linewidth = 0.9, linetype = "dashed") +
+  labs(
+    title    = "Distribution of Prediction Errors — M2 (Test Set)",
+    subtitle = "Centred near 0 indicates low systematic bias",
+    x        = "Residual (Actual − Predicted)",
+    y        = "Count"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(face = "bold"))
 ```
