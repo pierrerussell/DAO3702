@@ -997,7 +997,7 @@ In both of these graphs, R² stabilizes around 90% from PC2 to PC4. While PCs ar
 
 ------------------------------------------------------------------------
 
-# 8. Predictive Model
+# 8. Predictive Model Extension
 
 ## 8.1 Overview and Objective
 
@@ -1154,45 +1154,63 @@ Finally, there are key drivers of view count that are absent from the dataset, s
 
 ------------------------------------------------------------------------
 
-# 9. Key Findings and Discussion
+# 9. Feedback Incorporation
 
-## 9.1 Integrated Key Findings
+During the Phase 1 presentation, we received two main pieces of feedback: to extend the regression analysis into a possible predictive tool, and to examine how much model fit is lost when using dimensionality reduction for regression.
+
+To address the first point, we added Section 8, which develops an initial predictive model extension using an 80/20 train/test split. The category model performed better on the test set, suggesting that content category adds predictive value beyond engagement and timing variables. However, because likes and comments are post-publication variables that grow together with views, we interpret the model as a prototype rather than a fully deployable pre-publication prediction tool.
+
+To address the second point, we added Section 7, which uses principal components as regression inputs. We compared a reduced 4-PC model with a 9-PC model to assess the trade-off between simplicity and explanatory power. The reduced model lost about 0.0908 in R², or 9.08 percentage points, showing that dimensionality reduction preserves most of the model fit while discarding some information.
+
+------------------------------------------------------------------------
+
+# 10. Key Findings and Discussion
+
+## 10.1 Integrated Key Findings
 
 This study examines what drives YouTube video virality across markets. Overall, results suggest performance is driven mainly by audience engagement and content, while timing and geography play smaller roles.
 
-1.  Audience engagement is the primary driver of performance Regression analysis shows that likes (β ≈ 0.38) and comments (β ≈ 0.28) are the strongest predictors of log_views. This suggests that videos perform best when they generate active audience responses such as reactions, discussion, and interaction. Virality therefore depends more on engagement than passive exposure alone.
+1. **Audience engagement is the strongest signal of performance.**  
+Regression analysis shows that likes (β ≈ 0.38) and comments (β ≈ 0.28) are the strongest positive predictors of `log_views`. This suggests that videos perform best when they generate active audience responses such as reactions, discussion, and interaction. Virality therefore depends more on engagement than passive exposure alone.
 
-2.  Timing alone does not drive success Many videos trend within 5 days of publishing, indicating that rapid traction is common. However, PCA shows that timing variables such as days_to_trend and publish_hour have weak relationships with views, likes, and comments. In short, rapid trending may be common, but it does not guarantee stronger performance.
+2. **Content category adds explanatory and predictive value.**  
+Adding category variables improved model fit, and the train/test predictive extension showed that the category model performed better than the base model. This suggests that content type provides additional information beyond engagement and timing variables. However, the improvement is incremental, so category should be viewed as meaningful but secondary to engagement.
 
-3.  Content explains performance better than contextual factors Although engagement differs significantly across countries, the effect size is small (η² ≈ 0.065), indicating that geography explains only a limited share of variation. In contrast, adding content categories improved model fit (adjusted R²: \~0.67 to \~0.69), with several categories outperforming the Entertainment baseline. This suggests that performance is driven more by content and audience response than by where content is posted.
+3. **Contextual factors matter, but their practical influence is limited.**   
+Engagement rates differ significantly across countries, but the effect size is small (η² ≈ 0.065), meaning geography explains only about 6.5% of engagement variation. Similarly, many videos trend within five days, but timing variables such as `days_to_trend` and `publish_hour` are weaker predictors than engagement and category. Overall, context matters, but audience response and content type remain more central to performance.
 
-## 9.2 Evaluation of Hypotheses
+## 10.2 Evaluation of Hypotheses
 
-• Engagement and content factors were strongly supported as the main drivers of performance. • Geographic and regional differences were supported, but with weaker practical influence. • Latent performance dimensions were supported, with PCA identifying key underlying drivers of performance. • Predictive relationships were supported, as the regression models explained a substantial share of variation in outcomes.
+• Engagement and content factors were strongly supported as key factors associated with performance.  
+• Geographic and regional differences were supported, but with weaker practical influence. 
+• Latent performance dimensions were supported, with PCA identifying key underlying drivers of performance. 
+• Predictive relationships were supported, as the regression models explained a substantial share of variation in outcomes.
 
-Overall insight: Virality is driven primarily by content and audience engagement, while contextual factors play a secondary role.
+## 10.3 Surprising and Non-Intuitive Findings
 
-## 9.3 Surprising and Non-Intuitive Findings
+• Early visibility does not guarantee success: Although many videos trend quickly, timing variables contribute only weakly to performance differences. Early exposure alone is therefore insufficient.
+• Negative reactions can still increase visibility: Dislikes are positively associated with views and comments, suggesting that controversial or polarising content can also generate attention and engagement.
 
-1.  Early visibility does not guarantee success: Although many videos trend quickly, timing variables contribute only weakly to performance differences. Early exposure alone is therefore insufficient.
+## 10.4 Limitations and Scope
 
-2.  Negative reactions can still increase visibility: Dislikes are positively associated with views and comments, suggesting that controversial or polarising content can also generate attention and engagement.
+• The analysis identifies correlations rather than causal relationships. 
+• Important factors such as recommendation algorithms and creator reputation are not captured in the dataset. 
+• log_views is used as a proxy for performance and may not capture all aspects of virality. Accordingly, the findings should be interpreted as indicative patterns rather than definitive causal drivers.
 
-## 9.4 Limitations and Scope
+## 10.5 Practical Implications and Recommendations
 
-• The analysis identifies correlations rather than causal relationships. • Important factors such as recommendation algorithms and creator reputation are not captured in the dataset. • log_views is used as a proxy for performance and may not capture all aspects of virality. Accordingly, the findings should be interpreted as indicative patterns rather than definitive causal drivers.
+1. **Prioritise engagement-driven content design.**  
+Since likes and comments are the strongest predictors of performance, creators should design content that encourages reactions, discussion, sharing, and repeat interaction.
 
-## 9.5 Practical Implications and Recommendations
+2. **Focus on content–audience fit over posting conditions.**  
+Given the limited role of geography and timing, creators should prioritise formats and topics that resonate with target audiences rather than over-optimising upload timing or market selection.
 
-1.  Prioritise engagement-driven content design Since likes and comments are the strongest predictors of performance, creators should design content that encourages reactions, discussion, sharing, and repeat interaction to improve reach.
-
-2.  Focus on content–audience fit over posting conditions Given the limited role of geography and timing, creators should prioritise formats and topics that resonate with target audiences rather than over-optimising upload timing or market selection.
-
-3.  Use analytics as a decision-support tool The regression framework can be developed into a planning tool to estimate expected performance from video attributes, helping creators compare content ideas and make better publishing decisions.
+3. **Use analytics as a decision-support tool.**  
+The regression framework can support post-publication performance evaluation and help creators compare which content attributes are associated with stronger outcomes.
 
 \newpage
 
-# 10. Appendix
+# 11. Appendix
 
 ```{r session-info}
 sessionInfo()
