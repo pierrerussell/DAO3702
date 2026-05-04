@@ -836,7 +836,7 @@ ggplot(cat_coefs, aes(x = reorder(term, estimate),
     title    = "Category Coefficients (vs Entertainment Baseline)",
     subtitle = "Positive = more views than Entertainment; negative = fewer",
     x        = NULL,
-    y        = "Coefficient (\u0394 log views)",
+    y        = "Coefficient (change in log views)",
     colour   = NULL
   ) +
   theme_minimal(base_size = 12)
@@ -921,7 +921,7 @@ Approximately **10.9% of R² is lost** when moving from 8 PCs to 2 PCs.
 
 ### 7.4 Progressive R² Across All PC Cutoffs
 
-```{r pc-reg-progressive, fig.cap="R-squared of log_views regressed on PC1 through PCk, for k equals 1 to 9", echo=FALSE}
+```{r pc-reg-progressive, fig.cap="R-squared of log views regressed on PC1 through PC$k$, for k equals 1 to 9", echo=FALSE}
 progressive_r2 <- data.frame(
   k  = 1:8,
   r2 = sapply(1:8, function(k) {
@@ -954,7 +954,7 @@ ggplot(progressive_r2, aes(x = k, y = r2)) +
 
 ### 7.5 Cumulative Variance Explained vs R²
 
-```{r pc-reg-cumvar, fig.cap="Cumulative PCA variance explained vs predictive R-squared for log_views", echo=FALSE}
+```{r pc-reg-cumvar, fig.cap="Cumulative PCA variance explained vs predictive R-squared for log views", echo=FALSE}
 n_pcs <- length(pca_result$sdev)
 
 cumvar_df <- data.frame(
@@ -1000,7 +1000,7 @@ While PCA effectively compresses the dataset’s variance,the graph from *Sectio
 
 ## 8.1 Overview and Objective
 
-In this section, predictive models estimating `log_views` for unseen videos were built, using a train/test split, to verify findings from earlier sections. Two configurations were evaluated:
+In this section, predictive models estimating `log views` for unseen videos were built, using a train/test split, to verify findings from earlier sections. Two configurations were evaluated:
 
 -   **M1** (base continuous predictors: logarithm of like count, logarithm of comment count, days to trend, and publish hour)
 
@@ -1838,7 +1838,7 @@ ggplot(cat_coefs, aes(x = reorder(term, estimate),
     title    = "Category Coefficients (vs Entertainment Baseline)",
     subtitle = "Positive = more views than Entertainment; negative = fewer",
     x        = NULL,
-    y        = "Coefficient (\u0394 log views)",
+    y        = "Coefficient (change in log views)",
     colour   = NULL
   ) +
   theme_minimal(base_size = 12)
